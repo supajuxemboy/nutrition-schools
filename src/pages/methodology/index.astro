@@ -246,9 +246,71 @@ const faq = [
     </p>
     <p>
       Survey figures are ours, from a self-selected sample, and are labeled as such everywhere they appear rather than
-      being blended into federal statistics. The full limitations are published on the
-      {' '}<a class="text-link" href="/research/">research page</a>, including why the employment figure should be read as
-      a ceiling.
+      being blended into federal statistics. The dedicated write-up is
+      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026 page</a>.
+      Full limitations also sit on the <a class="text-link" href="/research/">research page</a>.
+    </p>
+
+    <h3>Survey headline results</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Sample size</td><td>{outcomesSurvey.sample.toLocaleString()} graduates (2020 to 2025)</td></tr>
+          <tr><td>Survey period</td><td>{outcomesSurvey.fieldedLabel}</td></tr>
+          <tr><td>Employment within six months</td><td>{outcomesSurvey.headline.employedWithinSixMonths}%</td></tr>
+          <tr><td>Supervised practice critical or very important</td><td>{outcomesSurvey.headline.supervisedPracticeCritical}%</td></tr>
+          <tr><td>Employers reporting difficulty hiring qualified RDNs</td><td>{outcomesSurvey.headline.employerHiringDifficulty}%</td></tr>
+          <tr><td>Wanted more business training for private practice</td><td>{outcomesSurvey.headline.wantedBusinessTraining}%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Median starting salary by credential</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Highest credential at first position</th><th>Median starting salary</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.startingSalaryByCredential.map(([label, salary]) => (
+            <tr><td>{label}</td><td>${salary.toLocaleString()}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>First career paths</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Career path</th><th>Share of respondents</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.careerPaths.map(([path, share]) => (
+            <tr><td>{path}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Skills in demand</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Share reporting employer demand</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.skillsInDemand.map(([skill, share]) => (
+            <tr><td>{skill}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The RDN credential is not optional if you want clinical work.
+      {' '}{outcomesSurvey.headline.supervisedPracticeCritical} percent of graduates said supervised practice was
+      critical. Students still try to skip it. That is a career-ending mistake, and this survey is why the Quality Index
+      weights supervised practice at 17 points, second only to curriculum.
+    </p>
+    <p>
+      Apply the index on the <a class="text-link" href="/rankings/">rankings index</a>, starting with
+      {' '}<a class="text-link" href="/rankings/best-acend-accredited-nutrition-programs/">ACEND accredited programs</a>.
+      Editorial standards are on the <a class="text-link" href="/about/">about page</a>.
     </p>
 
     <h2>Where to complain</h2>

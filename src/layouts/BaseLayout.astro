@@ -1,5 +1,6 @@
 ---
 import { site } from '../data/site';
+import { crumbLabel, relatedLinks } from '../data/nav';
 import '../styles/theme.css';
 
 interface Props {
@@ -29,10 +30,12 @@ const pathParts = Astro.url.pathname.split('/').filter(Boolean);
 const breadcrumbs = [
   { name: 'Home', item: site.url + '/' },
   ...pathParts.map((part, index) => ({
-    name: decodeURIComponent(part).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    name: crumbLabel(part, pathParts, index),
     item: new URL(`/${pathParts.slice(0, index + 1).join('/')}/`, site.url).toString()
   }))
 ];
+const related = relatedLinks(Astro.url.pathname);
+const showCrumbs = pathParts.length > 0;
 
 const organization = {
   '@type': 'Organization',
@@ -139,7 +142,30 @@ const pageSchema = { '@context': 'https://schema.org', '@graph': graph };
     </a>
     <nav aria-label="Primary">{nav.map(([label, href]) => <a href={href}>{label}</a>)}</nav>
   </header>
-  <main id="main"><slot /></main>
+  <main id="main">
+    {showCrumbs && (
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          {breadcrumbs.map((crumb, index) => (
+            <li>
+              {index < breadcrumbs.length - 1
+                ? <a href={new URL(crumb.item).pathname}>{crumb.name}</a>
+                : <span aria-current="page">{crumb.name}</span>}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
+    <slot />
+    {related.length > 0 && pathParts.length > 0 && (
+      <nav class="related wrap" aria-label="Related pages">
+        <p class="eyebrow">Related on this site</p>
+        <div class="related-grid">
+          {related.map(([href, label]) => <a href={href}>{label} <span aria-hidden="true">→</span></a>)}
+        </div>
+      </nav>
+    )}
+  </main>
   <footer>
     <div>
       <a class="footer-logo" href="/">

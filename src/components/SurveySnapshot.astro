@@ -1,0 +1,26 @@
+---
+/**
+ * Compact proprietary-survey callout for career and hub pages.
+ * Full tables live on /resources/nutrition-career-outcomes/.
+ */
+import { outcomesSurvey } from '../data/research';
+
+interface Props {
+  focus?: string;
+}
+const { focus } = Astro.props;
+---
+<div class="research">
+  <strong>From our Career Outcomes Survey 2026</strong>
+  <p>
+    {outcomesSurvey.sampleLabel} from the {outcomesSurvey.cohort}, fielded {outcomesSurvey.fieldedLabel}.
+    {outcomesSurvey.headline.employedWithinSixMonths} percent reported employment within six months.
+    {outcomesSurvey.headline.supervisedPracticeCritical} percent called supervised practice critical or very important.
+    Median self-reported first-position salaries: $52,000 certificate, $58,000 associate, $65,000 bachelor, $75,000
+    master, $85,000 doctorate. Respondents opted in, so the employment figure is a ceiling.
+    {focus}
+  </p>
+  <p>
+    <a class="text-link" href="/resources/nutrition-career-outcomes/">Read the full survey findings and limitations →</a>
+  </p>
+</div>

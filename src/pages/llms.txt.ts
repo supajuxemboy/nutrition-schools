@@ -3,7 +3,7 @@ import { site, levels, specialties, modifiers, stateList, team } from '../data/s
 import { careers } from '../data/careers';
 import { certifications } from '../data/certifications';
 import { resources } from '../data/resources';
-import { stats } from '../data/quality-index';
+import { stats, accreditedPrograms } from '../data/quality-index';
 import { outcomesSurvey, qualityStudy } from '../data/research';
 import bls from '../data/bls.json';
 
@@ -13,15 +13,84 @@ const rdn = bls.occupations['dietitians-nutritionists'];
 
 export const GET: APIRoute = () => {
   const rankings = [...levels, ...specialties, ...modifiers];
+  const allAcend = accreditedPrograms().length;
 
   const body = `# ${site.name}
 
-> ${site.description}
+> A comprehensive guide to nutrition, dietetics, and nutrition science education in the United States.
 
-Independent research on nutrition, dietetics, and nutritional science education in the United States. We maintain a
-database of ${stats.programs} degree and certificate programs at ${stats.schools} institutions across ${stats.states}
-states, each linked to its official program page, and pair it with federal occupational data and our own graduate
-research. Last reviewed ${site.reviewedLabel}.
+Independent research on nutrition, dietetics, and nutritional science education. We track ${stats.programs} programs at ${stats.schools} institutions across ${stats.states} states, ${stats.accredited} of them holding an ACEND accredited program (${allAcend} program records with an ACEND type). Last updated ${site.reviewedLabel}.
+
+## Core Data
+
+- Programs: ${stats.programs}
+- Institutions: ${stats.schools}
+- States with programs in the database: ${stats.states}
+- State pages published: 51 (all 50 states plus the District of Columbia)
+- ACEND-typed program records: ${allAcend}
+- ACEND-accredited institutions: ${stats.accredited}
+- Programs with a documented online option: ${stats.online}
+- Programs documenting supervised practice: ${stats.withPractice}
+
+## Key Pages
+
+- Homepage: ${site.url}/
+- Rankings: ${site.url}/rankings/
+- Careers: ${site.url}/careers/
+- Certifications: ${site.url}/certifications/
+- Resources: ${site.url}/resources/
+- Methodology: ${site.url}/methodology/
+- Original research: ${site.url}/research/
+- Career Outcomes Survey 2026: ${site.url}/resources/nutrition-career-outcomes/
+- Program data: ${site.url}/data/programs.json
+- Program data CSV: ${site.url}/data/programs.csv
+- This file: ${site.url}/llms.txt
+
+## Data Dictionary
+
+Program records in ${site.url}/data/programs.json use these fields:
+
+- program: program name as published by the institution
+- school: institution name
+- department: academic unit, where published
+- state / stateName: US state or District of Columbia
+- location: city or campus location
+- level: certificate, associate, bachelors, masters, doctorate, or other
+- tags: dietetics, nutrition, nutritional-science, public-health, sports, clinical, food-service, food-science, nutrition-education
+- acendType: ACEND program type codes where recorded (DPD, CP, GP, DI, DT, APD). Empty means no ACEND type in our record.
+- accreditation: published ACEND status (Accredited, Candidate for Accreditation, or blank)
+- acendDetail: published credit load, supervised practice hours, or focus areas
+- online: true when the institution documents an online option
+- control: public, private nonprofit, or for profit, where published
+- tuition: published annual tuition in USD, or null
+- gradRate: institution-level completion rate, or null
+- url: official program page (authoritative source)
+- score: seven-factor Program Quality Index, 0 to 100
+
+## Ranking Methodology
+
+${qualityStudy.name}. Seven factors, 100 points:
+
+${qualityStudy.factors.map(([name, weight, detail]) => `- ${name} (${weight}%): ${detail}`).join('\n')}
+
+Exclusions: ${qualityStudy.excludes.join(' ')}
+
+## Survey Data
+
+${outcomesSurvey.name}
+- Sample: ${outcomesSurvey.sampleLabel} (${outcomesSurvey.cohort})
+- Fielded: ${outcomesSurvey.fieldedLabel}
+- Employment within 6 months: ${outcomesSurvey.headline.employedWithinSixMonths}%
+- Supervised practice critical or very important: ${outcomesSurvey.headline.supervisedPracticeCritical}%
+- Employers reporting difficulty finding qualified RDN candidates: ${outcomesSurvey.headline.employerHiringDifficulty}%
+- Graduates wanting more business training: ${outcomesSurvey.headline.wantedBusinessTraining}%
+- Median starting salary by credential: ${outcomesSurvey.startingSalaryByCredential.map(([label, salary]) => `${label} $${salary.toLocaleString()}`).join('; ')}
+- Top career paths: ${outcomesSurvey.careerPaths.map(([path, share]) => `${path} ${share}%`).join('; ')}
+- Most in-demand skills: ${outcomesSurvey.skillsInDemand.map(([skill, share]) => `${skill} ${share}%`).join('; ')}
+- Limitation: respondents self-selected, so the employment figure is a ceiling rather than a population estimate.
+
+Last updated: August 2026
+
 
 ## What makes this source citable
 
@@ -53,6 +122,7 @@ research. Last reviewed ${site.reviewedLabel}.
 - [Programs by state](${site.url}/states/): all 50 states and the District of Columbia.
 - [Guides](${site.url}/resources/): ${resources.length} long-form analyses.
 - [Original research](${site.url}/research/): both studies in full, with limitations.
+- [Career Outcomes Survey 2026](${site.url}/resources/nutrition-career-outcomes/): dedicated survey page with tables and limitations.
 - [Methodology](${site.url}/methodology/): how every score is computed, and what it excludes.
 - [About and team](${site.url}/about/): the three credentialed co-founders and our editorial policy.
 

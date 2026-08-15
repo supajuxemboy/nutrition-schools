@@ -1,0 +1,276 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import Byline from '../../components/Byline.astro';
+import { site, teamBySlug } from '../../data/site';
+import { outcomesSurvey } from '../../data/research';
+import { stats } from '../../data/quality-index';
+import bls from '../../data/bls.json';
+
+const author = teamBySlug['donald-lewis'];
+const rdn = bls.occupations['dietitians-nutritionists'];
+
+const datasetSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: outcomesSurvey.name,
+  description: outcomesSurvey.method,
+  creator: { '@id': `${site.url}/#organization` },
+  datePublished: outcomesSurvey.published,
+  temporalCoverage: '2020/2025',
+  variableMeasured: [
+    'employment within six months of graduation',
+    'median starting salary by credential',
+    'first career path',
+    'employer-requested skills',
+    'importance of supervised practice'
+  ],
+  url: new URL('/resources/nutrition-career-outcomes/', site.url).toString()
+};
+
+const faq = [
+  {
+    question: 'Is the 86 percent employment figure a national rate?',
+    answer: `No. It is the share of ${outcomesSurvey.sample.toLocaleString()} self-selected respondents in the ${outcomesSurvey.name} who reported employment within six months of graduation. Graduates who left the field or lost touch with their programs are harder to reach, so treat 86 percent as a ceiling, not a census.`
+  },
+  {
+    question: 'Are the salary figures federal data?',
+    answer: `No. Median starting salaries by credential are ours: $52,000 certificate, $58,000 associate, $65,000 bachelor, $75,000 master, $85,000 doctorate. They are self-reported first-position base pay and are not adjusted for region. The Bureau of Labor Statistics May 2024 median of $${rdn.median.toLocaleString()} for dietitians and nutritionists is a full-career occupational median, not an entry figure. We never blend the two silently.`
+  },
+  {
+    question: 'Why does supervised practice dominate the findings?',
+    answer: `${outcomesSurvey.headline.supervisedPracticeCritical} percent of respondents called supervised practice critical or very important, the strongest consensus in the study. It is also an RDN eligibility requirement. Students who treat internship placement as a final-year problem are ignoring the finding that most clearly predicts whether this education becomes a career.`
+  },
+  {
+    question: 'Can I cite this survey?',
+    answer: `Yes. Cite it as "${outcomesSurvey.name}, NutritionSchools.org, ${outcomesSurvey.published}." Carry the limitations with any figure you quote. The dedicated research page and this page exist so those caveats stay attached.`
+  }
+];
+---
+<BaseLayout
+  title="Nutrition and Dietetics Career Outcomes Survey 2026"
+  description={`Proprietary survey of ${outcomesSurvey.sampleLabel}: ${outcomesSurvey.headline.employedWithinSixMonths} percent employed within six months, starting salaries by credential, career paths, skills in demand, and the limitations you should read before citing.`}
+  article={{ section: 'Research', author: author.name, published: outcomesSurvey.published }}
+>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(datasetSchema)} />
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Original research</p>
+      <h1>Nutrition and Dietetics Career Outcomes Survey 2026</h1>
+      <p class="lede">
+        {outcomesSurvey.sampleLabel} from the {outcomesSurvey.cohort}, fielded {outcomesSurvey.fieldedLabel}. These are
+        our numbers. The limitations sit next to the findings, not in a footnote.
+      </p>
+      <div class="metrics">
+        <div><strong>{outcomesSurvey.sample.toLocaleString()}</strong><span>graduates surveyed</span></div>
+        <div><strong>{outcomesSurvey.headline.employedWithinSixMonths}%</strong><span>employed within six months</span></div>
+        <div><strong>{outcomesSurvey.headline.supervisedPracticeCritical}%</strong><span>called supervised practice critical</span></div>
+        <div><strong>{outcomesSurvey.headline.employerHiringDifficulty}%</strong><span>of employers struggle to hire RDNs</span></div>
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <Byline author={author} prefix="Research directed by" />
+
+    <AiSummary>
+      The Nutrition and Dietetics Career Outcomes Survey 2026 is proprietary research by NutritionSchools.org covering
+      1,154 nutrition and dietetics graduates from the classes of 2020 through 2025, fielded January to March 2026.
+      {outcomesSurvey.headline.employedWithinSixMonths} percent reported employment within six months.
+      Median self-reported first-position salaries were $52,000 at certificate level, $58,000 associate, $65,000
+      bachelor, $75,000 master, and $85,000 doctorate. Top first paths were clinical dietetics (28 percent), community
+      and public health nutrition (20 percent), and food service management (14 percent). Medical nutrition therapy was
+      the most requested skill at 72 percent. {outcomesSurvey.headline.supervisedPracticeCritical} percent called
+      supervised practice critical or very important. {outcomesSurvey.headline.employerHiringDifficulty} percent of
+      employers reported difficulty finding qualified RDN candidates, and
+      {outcomesSurvey.headline.wantedBusinessTraining} percent of graduates wished they had more business training.
+      Respondents opted in, so the employment figure is a ceiling. Last updated August 2026.
+    </AiSummary>
+
+    <div class="hot-take">
+      <strong>The finding that should change how you enroll</strong>
+      <p>
+        The RDN credential is not optional if you want clinical work, and supervised practice is not a formality.
+        {outcomesSurvey.headline.supervisedPracticeCritical} percent of graduates said it was critical or very important
+        to their career. Students still try to skip it. That is a career-ending mistake, and this survey is why we say so
+        in those words.
+      </p>
+    </div>
+
+    <h2>What this survey is, and what it is not</h2>
+    <p>{outcomesSurvey.method}</p>
+    <p>
+      It is not a Bureau of Labor Statistics product. Federal wage and projection figures on this site come from the May
+      2024 Occupational Employment and Wage Statistics release and the 2024 to 2034 Employment Projections program, cited
+      by name on career pages. This survey answers a different question: what happened to a specific cohort of nutrition
+      and dietetics graduates at first position, in their own words.
+    </p>
+    <p>
+      Anyone quoting 86 percent employment without the self-selection caveat is misusing our data. We would rather you
+      cite us accurately than cite us generously.
+    </p>
+    <p>
+      The research record that also houses the Program Quality Index is on
+      {' '}<a class="text-link" href="/research/">the research page</a>. Scoring rules for the rankings that cite this
+      survey sit on <a class="text-link" href="/methodology/">methodology</a>. This page exists so the survey can be
+      cited without mixing it into either of those.
+    </p>
+
+    <h2>Key findings, in the order they should change a decision</h2>
+    <p>
+      Three results dominate, and they are not the ones most program pages advertise. First,
+      {' '}{outcomesSurvey.headline.supervisedPracticeCritical} percent of graduates said supervised practice was
+      critical or very important to their career. That is the strongest consensus in the study, stronger than any
+      opinion about coursework, prestige, or cost. Second, {outcomesSurvey.headline.employerHiringDifficulty} percent of
+      employers reported difficulty finding qualified RDN candidates. Third,
+      {' '}{outcomesSurvey.headline.wantedBusinessTraining} percent of graduates wished they had more business training
+      for private practice. Nutrition curricula do not allocate time in that order, which is why graduates notice the
+      gap after they leave.
+    </p>
+    <p>
+      Employment within six months was {outcomesSurvey.headline.employedWithinSixMonths} percent. That is a real number
+      from a real sample, and it is also biased upward because respondents opted in. Read it as a ceiling. The salary
+      ladder by credential is the more useful planning table: $52,000 at certificate level, $58,000 associate, $65,000
+      bachelor, $75,000 master, $85,000 doctorate. Those are first-position medians, not mid-career federal wages.
+    </p>
+    <p>
+      Clinical dietetics was the largest first path at 28 percent. Community and public health nutrition was second at
+      20 percent. Food service management was third at 14 percent, ahead of sports nutrition at 10 percent. If you
+      enrolled because you wanted to work with athletes, sit with that ordering before you specialise. Sports nutrition
+      is the most romanticized career in the field. The survey does not invent a job census, and we will not either.
+    </p>
+
+    <h2>Headline results</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Sample size</td><td>{outcomesSurvey.sample.toLocaleString()} graduates (2020 to 2025)</td></tr>
+          <tr><td>Survey period</td><td>{outcomesSurvey.fieldedLabel}</td></tr>
+          <tr><td>Employment within six months</td><td>{outcomesSurvey.headline.employedWithinSixMonths}%</td></tr>
+          <tr><td>Supervised practice critical or very important</td><td>{outcomesSurvey.headline.supervisedPracticeCritical}%</td></tr>
+          <tr><td>Employers reporting difficulty hiring qualified RDNs</td><td>{outcomesSurvey.headline.employerHiringDifficulty}%</td></tr>
+          <tr><td>Wanted more business training for private practice</td><td>{outcomesSurvey.headline.wantedBusinessTraining}%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Median starting salary by credential</h2>
+    <p>
+      These are self-reported first-position base pay figures. They are not adjusted for cost of living. A $65,000
+      bachelor-level start in a high-cost metropolitan area is not the same outcome as the same number in a rural county.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Highest credential at first position</th><th>Median starting salary</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.startingSalaryByCredential.map(([label, salary]) => (
+            <tr><td>{label}</td><td>${salary.toLocaleString()}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      For federal context, dietitians and nutritionists earned a May 2024 median of ${rdn.median.toLocaleString()} across
+      about {rdn.employment.toLocaleString()} jobs, against ${bls.allOccupationsMedian.toLocaleString()} for all
+      occupations. That is a full-career median. Ours is an entry snapshot. Use both, and do not average them.
+    </p>
+
+    <h2>Where graduates actually went</h2>
+    <p>
+      Clinical dietetics is the largest destination. Food service management outranks sports nutrition. That ordering is
+      the opposite of how most students talk about the field, and it is the point of publishing the table.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Career path</th><th>Share of respondents</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.careerPaths.map(([path, share]) => (
+            <tr><td>{path}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Sports nutrition at 10 percent is larger than the paid job market would suggest. That almost certainly reflects
+      part-time, hybrid, and self-employed arrangements being counted as a path. If you are planning a sports career,
+      read the <a class="text-link" href="/resources/sports-nutrition-career-guide/">sports nutrition career guide</a>
+      before you specialise. There is no reliable published census of full-time sports dietitian posts, and we will not
+      invent one.
+    </p>
+
+    <h2>Skills employers asked for</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Share reporting employer demand</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.skillsInDemand.map(([skill, share]) => (
+            <tr><td>{skill}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Counseling and communication ranks third, above every technical specialisation except assessment. Food service
+      management outranks public health nutrition. Nutrition curricula do not allocate time in that order, which is why
+      {outcomesSurvey.headline.wantedBusinessTraining} percent later wished they had more business training.
+    </p>
+
+    <h2>What this means for you</h2>
+    <p>
+      If you want clinical work, get on an ACEND accredited pathway that includes supervised practice. The survey does not
+      say prestige predicts outcomes. It says practice hours and the credential do. See the
+      {' '}<a class="text-link" href="/rankings/best-acend-accredited-nutrition-programs/">ACEND accredited ranking</a>
+      and the <a class="text-link" href="/resources/how-to-become-a-registered-dietitian-step-by-step/">RDN pathway</a>.
+    </p>
+    <p>
+      If you want sports nutrition, treat it as a specialisation on top of a clinical credential, not instead of one.
+      If you want food service management, stop treating it as a consolation prize: 14 percent of respondents landed
+      there, and the occupation is roughly four times the size of dietitians and nutritionists.
+    </p>
+    <p>
+      Then read the <a class="text-link" href="/careers/">career guides</a>, pick a
+      {' '}<a class="text-link" href="/states/">state</a>, and verify accreditation with ACEND rather than with us.
+    </p>
+
+    <h2>How to use this if you are choosing a program</h2>
+    <p>
+      Use the salary table to set a ceiling on debt, not a promise of income. A bachelor-level median start of $65,000
+      does not service six figures of student loans in a high-cost city. Use the career-path table to test whether the
+      specialisation you want is actually a first job or a later move. Use the skills table to audit a curriculum: if a
+      program does not teach medical nutrition therapy, nutrition assessment, and counseling, it is not preparing you
+      for the jobs that hired most of our respondents.
+    </p>
+    <p>
+      Use the supervised-practice finding as a filter. If a program cannot name sites, hours, and who owns placement
+      failure, it is asking you to ignore the result 94 percent of graduates agreed on. That is not a ranking nuance.
+      It is the decision.
+    </p>
+    <p>
+      Employers should read the hiring-difficulty figure next to the skills table. Difficulty finding qualified RDN
+      candidates is not the same as difficulty finding people with a nutrition degree. The gap is accreditation,
+      supervised practice, and medical nutrition therapy. Post accordingly.
+    </p>
+
+    <h2>Limitations, in full</h2>
+    <div class="research">
+      <strong>Read these before citing anything above</strong>
+      {outcomesSurvey.limitations.map(limitation => <p>{limitation}</p>)}
+    </div>
+    <p>
+      The full research record, including the Program Quality Index, is on the
+      {' '}<a class="text-link" href="/research/">research page</a>. Scoring rules are on
+      {' '}<a class="text-link" href="/methodology/">methodology</a>. We track {stats.programs} programs at
+      {' '}{stats.schools} institutions, which is not a complete census.
+    </p>
+
+    <Faq items={faq} />
+
+    <div class="notice">
+      <Byline author={author} prefix="Research directed by" />
+      <strong>How to cite:</strong> {outcomesSurvey.name}, NutritionSchools.org, {outcomesSurvey.published}. Carry the
+      limitations with the figure. Nothing here is medical or dietary advice. Last reviewed {site.reviewedLabel}.
+    </div>
+  </article>
+</BaseLayout>

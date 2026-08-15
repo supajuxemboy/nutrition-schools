@@ -241,10 +241,24 @@ const faq = [
         <p>
           Salary figures are self-reported first-position base pay and are not adjusted for region or cost of living. A
           $65,000 bachelor-level start in a high-cost metropolitan area is not the same outcome as the same number in a
-          rural county. <a class="text-link" href="/research/">Read the full methodology and limitations →</a>
+          rural county. <a class="text-link" href="/resources/nutrition-career-outcomes/">Read the full survey tables and limitations →</a>
         </p>
       </div>
-      <p><a class="text-link" href="/research/">See both studies in full →</a></p>
+      <div class="table-scroll" style="margin-top:22px">
+        <table>
+          <thead><tr><th>First career path</th><th>Share of respondents</th></tr></thead>
+          <tbody>
+            {outcomesSurvey.careerPaths.map(([path, share]) => (
+              <tr><td>{path}</td><td>{share}%</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <a class="text-link" href="/resources/nutrition-career-outcomes/">Career Outcomes Survey 2026, in full →</a>
+        {' '}·{' '}
+        <a class="text-link" href="/research/">Both studies, with limitations →</a>
+      </p>
     </div>
   </section>
 

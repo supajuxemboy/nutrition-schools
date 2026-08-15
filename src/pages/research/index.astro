@@ -28,7 +28,7 @@ const datasetSchema = {
         'employer-requested skills',
         'importance of supervised practice'
       ],
-      url: new URL('/research/', site.url).toString()
+      url: new URL('/resources/nutrition-career-outcomes/', site.url).toString()
     },
     {
       '@type': 'Dataset',
@@ -137,7 +137,8 @@ const faq = [
     <h2>{outcomesSurvey.name}</h2>
     <p>
       Sample: {outcomesSurvey.sampleLabel} from the {outcomesSurvey.cohort}. Fielded {outcomesSurvey.fieldedLabel}.
-      Published {outcomesSurvey.published}.
+      Published {outcomesSurvey.published}. The dedicated public page is
+      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">Career Outcomes Survey 2026</a>.
     </p>
     <h3>Method</h3>
     <p>{outcomesSurvey.method}</p>

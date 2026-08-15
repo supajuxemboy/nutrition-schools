@@ -8,6 +8,7 @@ import { careers } from '../../data/careers';
 import { certBySlug } from '../../data/certifications';
 import { site, teamBySlug } from '../../data/site';
 import { outcomesSurvey } from '../../data/research';
+import SurveySnapshot from '../../components/SurveySnapshot.astro';
 import bls from '../../data/bls.json';
 
 export function getStaticPaths() {
@@ -100,6 +101,8 @@ const occupationSchema = data
       <strong>Our take</strong>
       <p>{career.hotTake}</p>
     </div>
+
+    <SurveySnapshot focus={`For this role, read those figures against the federal wage table below and the live job market in the region where you intend to work.`} />
 
     <h2>Is this career a fit for you?</h2>
     <p>{career.fit}</p>
@@ -246,7 +249,8 @@ const occupationSchema = data
       Related reading:
       {' '}<a class="text-link" href="/rankings/">program rankings by level and specialty</a>,
       {' '}<a class="text-link" href="/certifications/">all credentials compared</a>,
-      {' '}<a class="text-link" href="/resources/nutrition-salary-guide-2026/">the full salary guide</a>, and
+      {' '}<a class="text-link" href="/resources/nutrition-salary-guide-2026/">the full salary guide</a>,
+      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026</a>, and
       {' '}<a class="text-link" href="/states/">programs by state</a>.
     </p>
 
