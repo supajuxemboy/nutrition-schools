@@ -278,6 +278,7 @@ details p { margin: 10px 0 2px }
 .record { display: grid; grid-template-columns: minmax(0, 1fr) 116px; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow) }
 .record > div { padding: 21px }
 .record h3 { margin: 4px 0; font: 700 21px/1.2 var(--serif); letter-spacing: -.02em }
+.record h3 .chip { font-size: 10px; font-weight: 800; vertical-align: middle; margin-left: 10px }
 .record .school { color: var(--muted); font-size: 14px; font-weight: 700; margin: 0 0 8px }
 .record dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 }
 .record dl div { padding: 8px 0 0; border-top: 1px solid var(--line) }

@@ -726,6 +726,48 @@ export const modifiers = [
           'How many hours, at which named sites, arranged by whom, in what settings, with what stipend or cost, and what happens if a placement falls through. Ask what proportion of last year students completed on schedule. A program that cannot answer these specifically is telling you something, and you should treat the vagueness as the answer.'
       }
     ]
+  },
+  {
+    slug: 'best-acend-accredited-nutrition-programs',
+    title: 'Best ACEND Accredited Nutrition Programs',
+    heading: 'Best ACEND Accredited Nutrition and Dietetics Programs',
+    seoTitle: 'Best ACEND Accredited Nutrition Programs',
+    seoDescription:
+      'Compare ACEND accredited nutrition and dietetics programs, the only programs that can make you eligible for the RDN examination, with links to every official program page.',
+    lead:
+      'If it is not ACEND accredited, you cannot become an RDN. That is not our opinion, it is the credentialing rule. This ranking is the subset of our database where that gate is actually open.',
+    flagship: true,
+    intro:
+      'Programs at institutions holding an ACEND accredited program of any type: didactic, coordinated, graduate, dietetic internship, dietetic technician, or advanced practice doctoral.',
+    thesis:
+      'Not all nutrition programs are created equal. If a program is not accredited by the Accreditation Council for Education in Nutrition and Dietetics, you cannot become a Registered Dietitian Nutritionist, no matter how rigorous the coursework or how famous the university. ACEND is the gatekeeper to the profession. Do not waste years on a program that cannot issue a verification statement.',
+    questions: [
+      {
+        heading: 'What is ACEND accreditation?',
+        answer:
+          'The Accreditation Council for Education in Nutrition and Dietetics is the accrediting body for dietetics education in the United States. It accredits specific programs, not institutions. A university can be regionally accredited and still have a nutrition degree that does not lead to the RDN credential. That distinction is the single most expensive misunderstanding in this field.'
+      },
+      {
+        heading: 'Can you become an RDN without an ACEND accredited program?',
+        answer:
+          'No. The Commission on Dietetic Registration requires ACEND accredited coursework and ACEND accredited supervised practice, plus a graduate degree, before you are eligible to sit the examination. There is no alternative pathway for domestic applicants, and any program implying otherwise is selling you something. International applicants have a separate, documented process, which is not a shortcut around accreditation.'
+      },
+      {
+        heading: 'What is the difference between full accreditation and candidacy?',
+        answer:
+          'Full accreditation means the program has completed a self-study and a site visit and currently meets ACEND standards. Candidacy for accreditation means the program is in the process and has not yet been granted full status. Candidacy programs can enroll students, but they carry more risk: if accreditation is not granted, those students may not receive a verification statement. Confirm the current status with ACEND, not with the program brochure.'
+      },
+      {
+        heading: 'Does ACEND accreditation guarantee a good program?',
+        answer:
+          'No, and we would rather say that than pretend a binary flag is a ranking. Accreditation is a floor, not a ceiling. It tells you the program can make you examination eligible. It does not tell you whether the department arranges strong placements, whether faculty still practise, or whether the net cost is sane. That is why accredited programs still get scored on the other six factors in our index, and why accreditation is 15 of 100 points rather than a veto that hides everything else.'
+      },
+      {
+        heading: 'How do I verify ACEND accreditation myself?',
+        answer:
+          'Search the ACEND accredited program directory for the specific program, not the university. Check the program type (DPD, CP, GP, DI, DT, or APD) and whether the status is accredited or candidate. Save a copy of what you see. Program pages lag, marketing copy overstates, and accreditation is the one fact that is cheap to confirm and expensive to get wrong.'
+      }
+    ]
   }
 ];
 
@@ -837,5 +879,5 @@ export const pillars = [
 export const rankingGroups = [
   { label: 'By degree level', items: levels },
   { label: 'By specialty', items: specialties },
-  { label: 'By format and cost', items: modifiers }
+  { label: 'By format, cost, and accreditation', items: modifiers }
 ];

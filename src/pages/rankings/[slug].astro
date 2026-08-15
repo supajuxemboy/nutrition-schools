@@ -7,7 +7,7 @@ import Byline from '../../components/Byline.astro';
 import { levels, specialties, modifiers, site, teamBySlug } from '../../data/site';
 import {
   allPrograms, byLevel, byTag, onlinePrograms, affordablePrograms, practicePrograms,
-  score, topByInstitution, stats, indexFactors, levelLabel, tagLabel, acendTypes,
+  accreditedPrograms, score, topByInstitution, stats, indexFactors, levelLabel, tagLabel, acendTypes,
   type ProgramRecord, type ScoredProgram
 } from '../../data/quality-index';
 import { qualityStudy, outcomesSurvey } from '../../data/research';
@@ -38,6 +38,7 @@ function resolve(r: Ranking): ProgramRecord[] {
   if (r.slug === 'online-nutrition-programs') return onlinePrograms();
   if (r.slug === 'most-affordable-nutrition-programs') return affordablePrograms();
   if (r.slug === 'nutrition-programs-with-internship') return practicePrograms();
+  if (r.slug === 'best-acend-accredited-nutrition-programs') return accreditedPrograms();
   return allPrograms;
 }
 
@@ -224,8 +225,13 @@ const itemList = {
       <p class="lede">
         One entry per institution, ordered by
         {ranking.slug === 'most-affordable-nutrition-programs' ? ' published tuition, then by Quality Index score' : ' Quality Index score'}.
-        Every card links to the official program page.
+        Every card links to the official program page. ACEND accreditation is flagged on every card because it is the
+        gate to the RDN credential.
       </p>
+      <ul class="chip-legend">
+        <li><span class="chip chip-acend">ACEND</span> program at an institution holding ACEND accreditation</li>
+        <li><span class="chip" style="color:#8a4a2a;border-color:#d9b8a8">Not ACEND</span> no ACEND program type in our record; verify independently</li>
+      </ul>
       <ProgramRecords programs={ranked} showState={true} />
       {rest.length > 0 && (
         <details>

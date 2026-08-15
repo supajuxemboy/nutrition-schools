@@ -13,9 +13,13 @@ const money = (value: number | null) => (value === null ? null : `$${value.toLoc
       <div>
         <p class="label">
           {levelLabel[program.level] ?? 'Program'}{program.online ? ' · Online available' : ''}
-          {program.acendType ? ` · ACEND: ${program.acendType}` : ''}
         </p>
-        <h3>{program.program}</h3>
+        <h3>
+          {program.program}
+          {program.acendType
+            ? <span class="chip chip-acend">ACEND {program.acendType}</span>
+            : <span class="chip" style="color:#8a4a2a;border-color:#d9b8a8">Not ACEND</span>}
+        </h3>
         <p class="school">{program.school}{showState ? ` · ${program.stateName}` : ''}</p>
         <dl>
           <div>
