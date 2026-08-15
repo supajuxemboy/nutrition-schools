@@ -1,0 +1,181 @@
+---
+import { site } from '../data/site';
+import '../styles/theme.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string;
+  image?: string;
+  /** Set on long-form editorial pages so they emit Article schema. */
+  article?: { published?: string; modified?: string; author?: string; section?: string };
+}
+
+const { title, description = site.description, canonical, image, article } = Astro.props;
+const pageUrl = canonical ?? new URL(Astro.url.pathname, site.url).toString();
+const socialImage = new URL(image ?? '/images/nutritionschools-mark.png', site.url).toString();
+
+const nav = [
+  ['Rankings', '/rankings/'],
+  ['Careers', '/careers/'],
+  ['Certifications', '/certifications/'],
+  ['States', '/states/'],
+  ['Resources', '/resources/'],
+  ['Research', '/research/'],
+  ['About', '/about/']
+];
+
+const pathParts = Astro.url.pathname.split('/').filter(Boolean);
+const breadcrumbs = [
+  { name: 'Home', item: site.url + '/' },
+  ...pathParts.map((part, index) => ({
+    name: decodeURIComponent(part).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+    item: new URL(`/${pathParts.slice(0, index + 1).join('/')}/`, site.url).toString()
+  }))
+];
+
+const organization = {
+  '@type': 'Organization',
+  '@id': `${site.url}/#organization`,
+  name: site.name,
+  url: site.url + '/',
+  description: site.description,
+  logo: {
+    '@type': 'ImageObject',
+    url: new URL('/images/nutritionschools-logo.png', site.url).toString()
+  },
+  founder: site.team.map(member => ({
+    '@type': 'Person',
+    '@id': `${site.url}/about/#${member.slug}`,
+    name: member.name,
+    jobTitle: member.role,
+    knowsAbout: member.knowsAbout,
+    hasCredential: member.certifications,
+    alumniOf: member.education
+  }))
+};
+
+const graph: Record<string, unknown>[] = [
+  organization,
+  {
+    '@type': 'WebSite',
+    '@id': `${site.url}/#website`,
+    name: site.name,
+    url: site.url + '/',
+    publisher: { '@id': `${site.url}/#organization` }
+  },
+  {
+    '@type': 'WebPage',
+    '@id': pageUrl,
+    name: title,
+    description,
+    url: pageUrl,
+    isPartOf: { '@id': `${site.url}/#website` },
+    dateModified: site.reviewed
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: crumb.item
+    }))
+  }
+];
+
+if (article) {
+  graph.push({
+    '@type': 'Article',
+    headline: title,
+    description,
+    url: pageUrl,
+    datePublished: article.published ?? site.published,
+    dateModified: article.modified ?? site.reviewed,
+    articleSection: article.section,
+    author: { '@type': 'Person', name: article.author ?? site.team[0].name },
+    publisher: { '@id': `${site.url}/#organization` },
+    isPartOf: { '@id': `${site.url}/#website` }
+  });
+}
+
+const pageSchema = { '@context': 'https://schema.org', '@graph': graph };
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f3f2d" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <title>{title} | {site.name}</title>
+  <meta name="description" content={description} />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+  <link rel="canonical" href={pageUrl} />
+  <meta property="og:title" content={`${title} | ${site.name}`} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content={article ? 'article' : 'website'} />
+  <meta property="og:url" content={pageUrl} />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:image" content={socialImage} />
+  <meta property="og:image:alt" content={`${site.name} logo`} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={`${title} | ${site.name}`} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={socialImage} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
+  <slot name="head" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header>
+    <a class="brand-logo" href="/">
+      <img src="/images/nutritionschools-logo.png" alt={site.name} width="1384" height="491" />
+    </a>
+    <nav aria-label="Primary">{nav.map(([label, href]) => <a href={href}>{label}</a>)}</nav>
+  </header>
+  <main id="main"><slot /></main>
+  <footer>
+    <div>
+      <a class="footer-logo" href="/">
+        <img src="/images/nutritionschools-logo.png" alt={site.name} width="1384" height="491" />
+      </a>
+      <p>{site.tagline}</p>
+      <p>
+        Independent research on nutrition, dietetics, and nutritional science education. We are not paid by the
+        institutions we cover and we do not sell ranking positions.
+      </p>
+    </div>
+    <div>
+      <strong>Explore</strong>
+      <a href="/rankings/">Rankings</a>
+      <a href="/careers/">Careers</a>
+      <a href="/certifications/">Certifications</a>
+      <a href="/states/">Programs by state</a>
+      <a href="/resources/">Guides</a>
+      <a href="/research/">Original research</a>
+      <a href="/methodology/">Methodology</a>
+      <a href="/about/">About the team</a>
+    </div>
+    <div>
+      <strong>Editorial standard</strong>
+      <p>
+        We separate four things: facts an institution publishes about itself, accreditation records, federal data we
+        cite by name, and our own editorial opinion. Opinion is labeled as opinion, and our own survey figures are
+        labeled as ours.
+      </p>
+      <p>
+        Nothing here is medical or dietary advice. Program details, credentialing rules, and licensure requirements
+        change. Confirm tuition, curriculum, accreditation, and licensure with the institution or credentialing body
+        before you make a decision.
+      </p>
+      <p>Last reviewed {site.reviewedLabel}.</p>
+    </div>
+  </footer>
+</body>
+</html>

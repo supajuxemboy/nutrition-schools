@@ -1,0 +1,23 @@
+{
+  "name": "nutrition-schools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "NutritionSchools.org: independent research on nutrition, dietetics, and nutritional science education in the United States.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.0",
+    "@astrojs/sitemap": "^3.3.0",
+    "astro": "^5.7.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.8.3"
+  }
+}

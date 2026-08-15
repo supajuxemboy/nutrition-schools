@@ -1,0 +1,12 @@
+---
+import type { TeamMember } from '../data/site';
+interface Props { author: TeamMember; prefix?: string }
+const { author, prefix = 'Reviewed by' } = Astro.props;
+---
+<div class="byline">
+  <img src={author.photoSmall} alt={author.name} width="128" height="128" loading="lazy" />
+  <div>
+    <strong>{prefix} {author.name}</strong>
+    <span>{author.role}</span>
+  </div>
+</div>

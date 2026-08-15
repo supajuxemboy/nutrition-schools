@@ -1,0 +1,486 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import ProgramRecords from '../../components/ProgramRecords.astro';
+import Byline from '../../components/Byline.astro';
+import { stateList, stateAgencies, site, teamBySlug } from '../../data/site';
+import {
+  byState, score, stats, levelLabel, tagLabel, acendTypes, practicePrograms
+} from '../../data/quality-index';
+import { outcomesSurvey, qualityStudy } from '../../data/research';
+import bls from '../../data/bls.json';
+
+/** Adjacent jurisdictions, used when a state has thin coverage in our database. */
+const NEIGHBORS: Record<string, string[]> = {
+  alabama: ['florida', 'georgia', 'mississippi', 'tennessee'],
+  alaska: ['washington', 'oregon'],
+  arizona: ['california', 'nevada', 'new-mexico', 'utah'],
+  arkansas: ['louisiana', 'mississippi', 'missouri', 'oklahoma', 'tennessee', 'texas'],
+  california: ['arizona', 'nevada', 'oregon'],
+  colorado: ['kansas', 'nebraska', 'new-mexico', 'oklahoma', 'utah', 'wyoming'],
+  connecticut: ['massachusetts', 'new-york', 'rhode-island'],
+  delaware: ['maryland', 'new-jersey', 'pennsylvania'],
+  'district-of-columbia': ['maryland', 'virginia'],
+  florida: ['alabama', 'georgia'],
+  georgia: ['alabama', 'florida', 'north-carolina', 'south-carolina', 'tennessee'],
+  hawaii: ['california', 'washington'],
+  idaho: ['montana', 'nevada', 'oregon', 'utah', 'washington', 'wyoming'],
+  illinois: ['indiana', 'iowa', 'kentucky', 'missouri', 'wisconsin'],
+  indiana: ['illinois', 'kentucky', 'michigan', 'ohio'],
+  iowa: ['illinois', 'minnesota', 'missouri', 'nebraska', 'south-dakota', 'wisconsin'],
+  kansas: ['colorado', 'missouri', 'nebraska', 'oklahoma'],
+  kentucky: ['illinois', 'indiana', 'missouri', 'ohio', 'tennessee', 'virginia', 'west-virginia'],
+  louisiana: ['arkansas', 'mississippi', 'texas'],
+  maine: ['new-hampshire', 'massachusetts'],
+  maryland: ['delaware', 'district-of-columbia', 'pennsylvania', 'virginia', 'west-virginia'],
+  massachusetts: ['connecticut', 'new-hampshire', 'new-york', 'rhode-island', 'vermont'],
+  michigan: ['indiana', 'ohio', 'wisconsin'],
+  minnesota: ['iowa', 'north-dakota', 'south-dakota', 'wisconsin'],
+  mississippi: ['alabama', 'arkansas', 'louisiana', 'tennessee'],
+  missouri: ['arkansas', 'illinois', 'iowa', 'kansas', 'kentucky', 'nebraska', 'oklahoma', 'tennessee'],
+  montana: ['idaho', 'north-dakota', 'south-dakota', 'wyoming'],
+  nebraska: ['colorado', 'iowa', 'kansas', 'missouri', 'south-dakota', 'wyoming'],
+  nevada: ['arizona', 'california', 'idaho', 'oregon', 'utah'],
+  'new-hampshire': ['maine', 'massachusetts', 'vermont'],
+  'new-jersey': ['delaware', 'new-york', 'pennsylvania'],
+  'new-mexico': ['arizona', 'colorado', 'oklahoma', 'texas', 'utah'],
+  'new-york': ['connecticut', 'massachusetts', 'new-jersey', 'pennsylvania', 'vermont'],
+  'north-carolina': ['georgia', 'south-carolina', 'tennessee', 'virginia'],
+  'north-dakota': ['minnesota', 'montana', 'south-dakota'],
+  ohio: ['indiana', 'kentucky', 'michigan', 'pennsylvania', 'west-virginia'],
+  oklahoma: ['arkansas', 'colorado', 'kansas', 'missouri', 'new-mexico', 'texas'],
+  oregon: ['california', 'idaho', 'nevada', 'washington'],
+  pennsylvania: ['delaware', 'maryland', 'new-jersey', 'new-york', 'ohio', 'west-virginia'],
+  'rhode-island': ['connecticut', 'massachusetts'],
+  'south-carolina': ['georgia', 'north-carolina'],
+  'south-dakota': ['iowa', 'minnesota', 'montana', 'nebraska', 'north-dakota', 'wyoming'],
+  tennessee: ['alabama', 'arkansas', 'georgia', 'kentucky', 'mississippi', 'missouri', 'north-carolina', 'virginia'],
+  texas: ['arkansas', 'louisiana', 'new-mexico', 'oklahoma'],
+  utah: ['arizona', 'colorado', 'idaho', 'nevada', 'new-mexico', 'wyoming'],
+  vermont: ['massachusetts', 'new-hampshire', 'new-york'],
+  virginia: ['district-of-columbia', 'kentucky', 'maryland', 'north-carolina', 'tennessee', 'west-virginia'],
+  washington: ['idaho', 'oregon'],
+  'west-virginia': ['kentucky', 'maryland', 'ohio', 'pennsylvania', 'virginia'],
+  wisconsin: ['illinois', 'iowa', 'michigan', 'minnesota'],
+  wyoming: ['colorado', 'idaho', 'montana', 'nebraska', 'south-dakota', 'utah']
+};
+
+export function getStaticPaths() {
+  return stateList.map(([slug, name]) => ({ params: { state: slug }, props: { slug, name } }));
+}
+
+const { slug, name } = Astro.props as { slug: string; name: string };
+const rdn = bls.occupations['dietitians-nutritionists'];
+const agency = stateAgencies[slug];
+const author = teamBySlug['matthew-obrien'];
+const stateNames = Object.fromEntries(stateList);
+
+const programs = byState(slug);
+const scored = score(programs);
+const schools = [...new Set(programs.map(p => p.school))].sort();
+const cities = [...new Set(programs.map(p => p.location).filter(Boolean))].sort();
+const online = programs.filter(p => p.online);
+const acendPrograms = programs.filter(p => p.acendType.trim().length > 0);
+const practiceSet = new Set(practicePrograms());
+const practiceHere = programs.filter(p => practiceSet.has(p));
+const levelMix = Object.entries(
+  programs.reduce<Record<string, number>>((acc, p) => ({ ...acc, [p.level]: (acc[p.level] ?? 0) + 1 }), {})
+).sort((a, b) => b[1] - a[1]);
+const tagMix = Object.entries(
+  programs.reduce<Record<string, number>>((acc, p) => {
+    for (const tag of p.tags) acc[tag] = (acc[tag] ?? 0) + 1;
+    return acc;
+  }, {})
+).sort((a, b) => b[1] - a[1]);
+const acendCodes = [...new Set(acendPrograms.flatMap(p => p.acendType.split(/[,\s]+/).filter(Boolean)))].sort();
+const tuitions = programs.map(p => p.tuition).filter((t): t is number => t !== null).sort((a, b) => a - b);
+const medianTuition = tuitions.length ? tuitions[Math.floor(tuitions.length / 2)] : null;
+const publicSchools = [...new Set(programs.filter(p => /public/i.test(p.control)).map(p => p.school))];
+
+const neighbors = (NEIGHBORS[slug] ?? []).map(n => ({ slug: n, name: stateNames[n], count: byState(n).length }))
+  .filter(n => n.count > 0)
+  .sort((a, b) => b.count - a.count);
+
+const has = programs.length > 0;
+
+const faq = [
+  {
+    question: `What nutrition programs are available in ${name}?`,
+    answer: has
+      ? `Our database holds ${programs.length} nutrition and dietetics programs at ${schools.length} institutions in ${name}, covering ${levelMix.map(([level, n]) => `${levelLabel[level] ?? level} (${n})`).join(', ')}. ${acendPrograms.length ? `${acendPrograms.length} of those sit at institutions holding an ACEND accredited program, with program types ${acendCodes.join(', ')} recorded.` : 'None of the institutions in our record for this state show an ACEND accredited program type, which is a significant gap if you are pursuing the RDN credential.'} Every entry links to the institution's own program page.`
+      : `Our database currently records no nutrition or dietetics programs in ${name}, and we would rather publish that gap than fill it with guesses. Our coverage is ${stats.programs} programs at ${stats.schools} institutions and is not a complete census. ${neighbors.length ? `The nearest coverage we have is in ${neighbors.slice(0, 3).map(n => `${n.name} (${n.count} programs)`).join(', ')}.` : ''} An accredited online program with local placement support is a realistic option here.`
+  },
+  {
+    question: `Do you need a licence to work as a dietitian in ${name}?`,
+    answer: `Most states require licensure or state certification to practise as a dietitian and to provide medical nutrition therapy, and the specific rules in ${name} are set by the state licensing board rather than by any national body. We will not state ${name} requirements as fact because these rules change and we cannot verify them continuously. Locate the ${name} board directly and read the current statute. The ${agency ? agency.name : 'state health agency'} is a starting point for finding it.`
+  },
+  {
+    question: `Where do nutrition graduates work in ${name}?`,
+    answer: `Hospital systems and outpatient clinics, long-term care facilities, the ${agency ? agency.name : 'state health agency'} and its WIC program, county and city health departments, school districts and school nutrition programs, federally qualified health centers, food banks and food policy organisations, and the land grant university extension service. Extension is consistently the most overlooked employer of nutrition graduates and worth investigating early.`
+  },
+  {
+    question: has ? `Which ${name} programs include supervised practice?` : `Can you complete supervised practice in ${name}?`,
+    answer: has
+      ? `${practiceHere.length} of the ${programs.length} programs we track in ${name} document supervised practice, an internship, a coordinated pathway, or a practicum in their published materials${acendCodes.some(c => ['CP', 'GP', 'DI', 'APD'].includes(c)) ? `, and the accredited program types recorded here include ${acendCodes.filter(c => ['CP', 'GP', 'DI', 'APD'].includes(c)).join(', ')}, which carry practice hours` : ''}. That is the number to weight most heavily, because in our own survey ${outcomesSurvey.headline.supervisedPracticeCritical} percent of graduates called supervised practice critical or very important to their career.`
+      : `Supervised practice happens at hospitals, clinics, health departments, and food service operations, all of which exist in ${name} regardless of whether a degree program does. Accredited online and distance programs frequently place students at sites near where they live. Ask a prospective program specifically whether they have or will develop placement relationships in ${name}, and get the answer in writing before you enroll.`
+  },
+  {
+    question: `What do dietitians earn in ${name}?`,
+    answer: `We do not publish state-level wage estimates, because the state figures we would need to cite carry sampling caveats we cannot verify page by page, and a wrong salary number is worse than none. Nationally, the Bureau of Labor Statistics reported a May 2024 median annual wage of $${rdn.median.toLocaleString()} for dietitians and nutritionists, with the lowest 10 percent under $${rdn.p10.toLocaleString()} and the highest 10 percent above $${rdn.p90.toLocaleString()}. For ${name} specifically, consult the BLS state occupational employment and wage estimates directly, and read them against local cost of living.`
+  }
+];
+---
+<BaseLayout
+  title={`Nutrition and Dietetics Programs in ${name}`}
+  description={has
+    ? `${programs.length} nutrition and dietetics programs at ${schools.length} institutions in ${name}, with links to every official program page, supervised practice detail, and local employer context.`
+    : `Nutrition and dietetics education in ${name}: what our database records, where the nearest programs are, local employers, and how to approach accredited online options with local placement.`}
+  article={{ section: 'State guides', author: author.name }}
+>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Programs by state</p>
+      <h1>Nutrition and dietetics programs in {name}</h1>
+      <p class="lede">
+        {has
+          ? `${programs.length} programs at ${schools.length} institutions, each linked to its official page, with the supervised practice and local employer detail that decides whether a program works for you.`
+          : `Our database records no programs in ${name}. Here is what that means, where the nearest coverage is, and how to build a credible pathway from here anyway.`}
+      </p>
+      <div class="metrics">
+        <div><strong>{programs.length}</strong><span>programs in our database</span></div>
+        <div><strong>{schools.length}</strong><span>institutions</span></div>
+        <div><strong>{acendPrograms.length}</strong><span>at ACEND accredited schools</span></div>
+        <div><strong>{online.length}</strong><span>with an online option</span></div>
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <Byline author={author} />
+
+    <AiSummary>
+      Nutrition and dietetics education in {name}: our database records {programs.length} programs at
+      {' '}{schools.length} institutions{has ? `, including ${levelMix.map(([level, n]) => `${n} at ${(levelLabel[level] ?? level).toLowerCase()} level`).join(', ')}` : ''}.
+      {has && acendPrograms.length > 0 && ` ${acendPrograms.length} sit at institutions holding an ACEND accredited program, with types ${acendCodes.join(', ')} recorded, and ${practiceHere.length} document supervised practice.`}
+      {has && online.length > 0 && ` ${online.length} document an online option.`}
+      {has && medianTuition && ` Median published annual tuition among ${name} programs publishing a figure is $${medianTuition.toLocaleString()}.`}
+      {!has && ` Our coverage of ${stats.programs} programs across ${stats.states} states is not exhaustive, and the nearest states with programs in our record are ${neighbors.slice(0, 3).map(n => n.name).join(', ')}.`}
+      {' '}The {agency ? agency.name : 'state health agency'} administers WIC and community nutrition programs and is a
+      primary public-sector employer. Nationally the Bureau of Labor Statistics reported a May 2024 median wage of
+      ${rdn.median.toLocaleString()} for dietitians and nutritionists across about {rdn.employment.toLocaleString()}
+      {' '}jobs with 6 percent projected growth to 2034. The RDN credential is national; {name} licensure is set by the
+      state board and must be confirmed there. Last reviewed {site.reviewedLabel}.
+    </AiSummary>
+
+    <div class="hot-take">
+      <strong>Why the state page matters</strong>
+      <p>
+        Supervised practice is a local relationship between an academic department and a hospital, clinic, or health
+        department. Nobody can lend you those relationships from another state. If you intend to build a career in
+        {' '}{name}, a program with genuine placement relationships in {name} is worth more to you than a better-branded
+        program a thousand miles away, and it is not close.
+      </p>
+    </div>
+
+    <h2>What nutrition education in {name} looks like</h2>
+    {has ? (
+      <>
+        <p>
+          We track {programs.length} nutrition and dietetics programs at {schools.length} institutions in {name}.
+          The credential mix is {levelMix.map(([level, n]) => `${n} at ${(levelLabel[level] ?? level).toLowerCase()} level`).join(', ')},
+          and the subject mix leans toward {tagMix.slice(0, 3).map(([tag, n]) => `${tagLabel[tag] ?? tag} (${n})`).join(', ')}.
+          {publicSchools.length > 0 && ` ${publicSchools.length} of the institutions here are public, which usually means the lowest net cost available to you as a resident.`}
+        </p>
+        <p>
+          Institutions in our {name} record: {schools.join(', ')}.
+          {cities.length > 0 && ` Programs are located in ${cities.slice(0, 12).join(', ')}${cities.length > 12 ? ', and other locations listed in the program cards below' : ''}.`}
+        </p>
+        <p>
+          {acendPrograms.length > 0
+            ? `${acendPrograms.length} of these programs sit at institutions holding an ACEND accredited program, with the accredited types ${acendCodes.join(', ')} appearing in our record. That matters because ACEND accreditation is the requirement for the coursework and supervised practice that lead to RDN examination eligibility, and it is program-specific rather than institution-wide.`
+            : `None of the institutions in our ${name} record show an ACEND accredited program type. If you are pursuing the RDN credential, that is the most important sentence on this page. Verify with ACEND directly rather than taking our word for it, because our record is not a complete census, and if it is accurate then your realistic routes are an out-of-state program, an accredited online program with local placement, or a non-clinical nutrition career.`}
+        </p>
+      </>
+    ) : (
+      <>
+        <p>
+          Our database records no nutrition or dietetics programs in {name}. We publish that rather than padding the page,
+          because a fabricated list would be worse than an honest gap. Two explanations are possible and they have very
+          different implications for you.
+        </p>
+        <p>
+          The first is that {name} genuinely has few or no institutions offering a nutrition or dietetics credential.
+          This is a real pattern in lower-population states, where a single university may cover several health
+          professions and nutrition is not among them. The second is that our coverage, {stats.programs} programs at
+          {' '}{stats.schools} institutions across {stats.states} states, has simply not captured what exists here. Both
+          are worth ten minutes of your own checking: search the ACEND accredited program directory filtered to {name}
+          and you will have a definitive answer.
+        </p>
+        <p>
+          Either way, the absence of a local program does not close the field to you. It changes your route, and the two
+          viable routes are an accredited program in a neighbouring state or an accredited distance program that arranges
+          supervised practice near where you live.
+        </p>
+      </>
+    )}
+
+    <h2>Supervised practice in {name}</h2>
+    <p>
+      This is the part of your education that decides your career. In our {outcomesSurvey.name} of
+      {' '}{outcomesSurvey.sampleLabel}, {outcomesSurvey.headline.supervisedPracticeCritical} percent described
+      supervised practice or internship as critical or very important, the strongest consensus in the entire study. It is
+      also the component students investigate last, which is exactly backwards.
+    </p>
+    {has ? (
+      <p>
+        {practiceHere.length} of the {programs.length} programs we track in {name} document supervised practice, an
+        internship, a coordinated pathway, or a practicum in their published materials.
+        {acendCodes.filter(c => ['CP', 'GP', 'DI', 'APD'].includes(c)).length > 0
+          ? ` The accredited program types recorded here include ${acendCodes.filter(c => ['CP', 'GP', 'DI', 'APD'].includes(c)).join(', ')}, all of which carry practice hours. Those are the programs to prioritise, because completing one leaves you examination eligible without a separate competitive internship application.`
+          : ` No coordinated, graduate, or internship program types appear in our ${name} record, which means students here may need to secure supervised practice separately. Confirm this with each program and with ACEND, because it changes your timeline substantially.`}
+      </p>
+    ) : (
+      <p>
+        Supervised practice happens in hospitals, outpatient clinics, long-term care facilities, health departments, and
+        institutional food service operations. All of those exist in {name} whether or not a degree program does.
+        Accredited distance programs routinely build placement relationships with sites near where a student lives, and
+        the good ones will name the sites. Ask a prospective program directly whether they have placed students in
+        {' '}{name} before, at which facilities, and what happens if a placement falls through. Get the reply in writing.
+      </p>
+    )}
+    <p>
+      The questions to ask any program, here or anywhere: how many hours, at which named sites, arranged by whom, in what
+      settings, at what cost or stipend, and what the contingency is when a site withdraws. A program that answers these
+      specifically is telling you it has real relationships. A program that answers vaguely is also telling you something.
+    </p>
+
+    {has && (
+      <>
+        <h2>{name} programs, scored</h2>
+        <p>
+          Ordered by the {qualityStudy.shortName}, our seven-factor index. Every card links to the institution's own
+          program page, which is the authoritative source for curriculum, cost, and accreditation.
+        </p>
+      </>
+    )}
+  </article>
+
+  {has && (
+    <section class="section alt">
+      <div class="wrap">
+        <ProgramRecords programs={scored} />
+      </div>
+    </section>
+  )}
+
+  <article class="content wrap">
+    {has && (
+      <>
+        <h2>Cost of nutrition programs in {name}</h2>
+        <p>
+          {medianTuition
+            ? `Median published annual tuition among the ${tuitions.length} ${name} programs publishing a figure is $${medianTuition.toLocaleString()}, ranging from $${tuitions[0].toLocaleString()} to $${tuitions[tuitions.length - 1].toLocaleString()}. Those are sticker prices and close to meaningless before aid.`
+            : `Few ${name} programs in our record publish a tuition figure, which is common and unhelpful. Request the per-credit rate that would apply to you specifically.`}
+          {publicSchools.length > 0 && ` The public institutions here, ${publicSchools.join(', ')}, will normally offer the lowest net cost to a ${name} resident, and in-state tuition is the single largest financial lever available to you.`}
+        </p>
+        <p>
+          Get a net cost figure from the financial aid office rather than working from published tuition. Then budget the
+          costs students routinely forget: relocation or commuting to supervised practice sites, months of reduced income
+          during full-time practice, professional liability insurance, background checks, immunisations, examination fees,
+          and licensure fees. Those add several thousand dollars at exactly the point when you are earning least.
+        </p>
+      </>
+    )}
+
+    <h2>Who hires nutrition graduates in {name}</h2>
+    <p>
+      Nutrition employment concentrates in a predictable set of institutions, and knowing the categories lets you search
+      for real postings rather than guessing.
+    </p>
+    <ul>
+      <li>
+        <strong>{agency ? agency.name : 'The state public health agency'}.</strong> The state agency administers WIC,
+        maternal and child nutrition programs, chronic disease prevention, and community nutrition initiatives, and is
+        typically the largest single public-sector employer of nutrition professionals in the state.
+        {agency && (
+          <> Its site is <a href={agency.url} target="_blank" rel="noopener noreferrer">{agency.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>, and program and employment pages are usually reachable from there.</>
+        )}
+        {' '}Federal data shows government employment of dietitians and nutritionists at a May 2024 median of
+        {' '}${rdn.industries[2][1].toLocaleString()}, effectively at the occupational median, generally with stronger
+        benefits and pension access than private employers.
+      </li>
+      <li>
+        <strong>Hospital systems and outpatient clinics.</strong> The largest employer of clinical dietitians and the
+        route with the clearest wage data: hospitals paid a May 2024 median of
+        {' '}${rdn.industries[1][1].toLocaleString()} and outpatient care centers ${rdn.industries[0][1].toLocaleString()},
+        the highest industry median in the occupation. These roles require the RDN credential and, in most states,
+        licensure.
+      </li>
+      <li>
+        <strong>County and city health departments.</strong> Local WIC clinics, nutrition education programming, and
+        community health initiatives. These are frequently the entry point into public health nutrition and the place
+        where an MPH begins to pay for itself.
+      </li>
+      <li>
+        <strong>School districts and school nutrition programs.</strong> Every district operates a food service program
+        subject to federal nutrition standards, and the management roles are real jobs with real budgets. This is
+        adjacent to food service management, which BLS reported at a May 2024 median of
+        {' '}${bls.occupations['food-service-managers'].median.toLocaleString()} across
+        {' '}{bls.occupations['food-service-managers'].employment.toLocaleString()} jobs nationally.
+      </li>
+      <li>
+        <strong>Long-term care and residential facilities.</strong> Nursing and residential care paid a May 2024 median
+        of ${rdn.industries[3][1].toLocaleString()} for dietitians and nutritionists. Demand here tracks the ageing
+        population and is the most reliably growing segment of clinical nutrition employment.
+      </li>
+      <li>
+        <strong>Federally qualified health centers and community clinics.</strong> Nutrition counselling embedded in
+        primary care, frequently serving populations with limited food access. Grant-funded, so posting volume is
+        irregular, and the work is among the most substantive in the field.
+      </li>
+      <li>
+        <strong>Food banks, food policy councils, and nonprofits.</strong> Program management, nutrition education, and
+        food access work. Pay is generally below clinical roles and the scope of responsibility is often larger earlier.
+      </li>
+      <li>
+        <strong>The land grant university extension service.</strong> Every state has one, it runs community nutrition
+        education across counties, and almost no nutrition student thinks to look at it. Consistently the most overlooked
+        employer in this list.
+      </li>
+    </ul>
+    <p>
+      The practical exercise: pick three of those categories, find twenty live postings in {name}, and count how many
+      require the RDN credential. That single afternoon will tell you more about your local market than any national
+      guide, including this one.
+    </p>
+
+    <h2>What nutrition employment pays nationally</h2>
+    <p>
+      We do not publish state wage estimates, for a reason worth explaining. State-level occupational estimates carry
+      sampling caveats that vary by state and by occupation, and a confidently wrong salary figure is more damaging than
+      no figure at all when someone is deciding whether to take on debt. So the table below is national, from the Bureau
+      of Labor Statistics May 2024 release, and you should read it against {name} cost of living rather than treating it
+      as a local forecast.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Federal measure, dietitians and nutritionists</th><th>Figure</th></tr></thead>
+        <tbody>
+          <tr><td>Median annual wage, May 2024</td><td>${rdn.median.toLocaleString()}</td></tr>
+          <tr><td>All occupations median, for comparison</td><td>${bls.allOccupationsMedian.toLocaleString()}</td></tr>
+          <tr><td>Lowest 10 percent</td><td>Under ${rdn.p10.toLocaleString()}</td></tr>
+          <tr><td>Highest 10 percent</td><td>Above ${rdn.p90.toLocaleString()}</td></tr>
+          <tr><td>Jobs held, 2024</td><td>{rdn.employment.toLocaleString()}</td></tr>
+          <tr><td>Projected growth to 2034</td><td>{rdn.growthPct}%, {rdn.growthLabel.toLowerCase()}</td></tr>
+          <tr><td>Projected annual openings</td><td>{rdn.openingsPerYear.toLocaleString()}</td></tr>
+          <tr><td>Highest paying industry</td><td>{rdn.industries[0][0]}, ${rdn.industries[0][1].toLocaleString()}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The spread is the important part. More than fifty thousand dollars separates the tenth and ninetieth percentiles
+      inside a single occupational code, which means anyone quoting you one nutrition salary is compressing a
+      distribution into a number that describes almost nobody. What moves you up that distribution is the credential and
+      the setting, not the name of the institution on your diploma. That is unusually good news if you are paying in-state
+      tuition in {name}.
+    </p>
+
+    <h2>Licensure and practice in {name}</h2>
+    <p>
+      The RDN credential is national, granted by the Commission on Dietetic Registration. Licensure is not. {name} sets
+      its own rules on who may practise dietetics, who may use the title nutritionist, and what medical nutrition therapy
+      requires, and those rules are administered by a state board that is usually separate from the health agency.
+    </p>
+    <p>
+      We deliberately do not state {name} licensure requirements as fact on this page. Boards revise statutes and
+      administrative rules, and a stale requirement presented confidently is the kind of error that costs someone a year.
+      Locate the {name} board, read the current rules, and note specifically whether the state licenses, certifies, or
+      merely regulates title use, and whether it recognises credentials other than the RDN. Our
+      {' '}<a class="text-link" href="/certifications/ln/">state licensure guide</a> explains what to look for.
+    </p>
+
+    {neighbors.length > 0 && (
+      <>
+        <h2>{has ? `Programs in states bordering ${name}` : `Where the nearest programs are`}</h2>
+        <p>
+          {has
+            ? `Supervised practice relationships and licensure make in-state study the default, but neighbouring states are worth comparing, particularly where a public institution offers a regional tuition agreement.`
+            : `The nearest coverage in our database sits in these adjacent states. A program just across a state line may still place you at sites near home, which is the question to ask.`}
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>State</th><th>Programs in our database</th></tr></thead>
+            <tbody>
+              {neighbors.map(n => (
+                <tr><td><a href={`/states/${n.slug}/`}>{n.name}</a></td><td>{n.count}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
+
+    <h2>Online options for {name} students</h2>
+    <p>
+      {has && online.length > 0
+        ? `${online.length} of the ${name} programs we track document an online option, and accredited programs elsewhere are equally available to you.`
+        : `Accredited distance programs are a legitimate route, and for students in states with thin local coverage they are frequently the only realistic one.`}
+      {' '}Online nutrition degrees are not easier. They are different, and the coursework transfers to remote delivery
+      well because it is reading, analysis, and case work.
+    </p>
+    <p>
+      The variable that decides whether an online program works is not the format. It is supervised practice. Three models
+      exist and they are not equivalent: the institution places you at partner sites near you, the institution helps you
+      secure your own placement with named support, or placement is entirely your responsibility. The third model means
+      competing with local campus students for the same slots with no institutional relationship behind you. Ask which
+      model you are being sold, in writing, before you pay a deposit. See the
+      {' '}<a class="text-link" href="/rankings/online-nutrition-programs/">online program ranking</a> and the
+      {' '}<a class="text-link" href="/resources/online-nutrition-degrees-are-they-respected/">guide to how employers read them</a>.
+    </p>
+
+    {has && acendCodes.length > 0 && (
+      <>
+        <h2>Reading the accredited program codes in this state</h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Code</th><th>What it means</th></tr></thead>
+            <tbody>
+              {acendCodes.filter(code => acendTypes[code]).map(code => (
+                <tr><td><strong>{code}</strong></td><td>{acendTypes[code]}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p>
+          If both a DPD and a CP or GP appear in {name}, prefer the coordinated or graduate program. It carries coursework
+          and supervised practice together, which means one application instead of two and no competitive internship
+          match standing between you and examination eligibility.
+        </p>
+      </>
+    )}
+
+    <h2>What to do next if you are in {name}</h2>
+    <ul>
+      <li>Search the ACEND accredited program directory filtered to {name} and confirm what exists independently of our database.</li>
+      <li>Locate the {name} licensing board and read the current rules on practice and title use before you choose a program.</li>
+      <li>{has ? `Contact the departments above and ask who arranges supervised practice, at which named sites, and what the contingency is.` : `Ask any distance program whether they have placed students in ${name}, at which facilities, and get the answer in writing.`}</li>
+      <li>Request a net cost estimate from the financial aid office rather than relying on published tuition.</li>
+      <li>Read twenty live job postings from {agency ? agency.name : 'the state health agency'}, local hospital systems, and school districts, and note which credentials they name.</li>
+      <li>Read the <a class="text-link" href="/resources/how-to-become-a-registered-dietitian-step-by-step/">RDN pathway guide</a> before you apply anywhere.</li>
+    </ul>
+
+    <Faq items={faq} />
+
+    <div class="notice">
+      <Byline author={author} prefix="Reviewed by" />
+      <strong>Coverage and verification:</strong> this page reflects our own database of {stats.programs} programs at
+      {' '}{stats.schools} institutions across {stats.states} states, which is not a complete census of nutrition
+      education in {name}. Every program listing links to the institution's own page, which is authoritative for
+      curriculum, cost, and accreditation. ACEND is authoritative on accreditation status, the Commission on Dietetic
+      Registration on the RDN credential, and the {name} board on licensure. Federal wage figures are national medians
+      from the Bureau of Labor Statistics May 2024 release, not {name} estimates. Nothing here is medical, dietary, or
+      legal advice. Last reviewed {site.reviewedLabel}.
+    </div>
+  </article>
+</BaseLayout>

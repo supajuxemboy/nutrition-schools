@@ -1,0 +1,231 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import { careers } from '../../data/careers';
+import { outcomesSurvey } from '../../data/research';
+import { site } from '../../data/site';
+import bls from '../../data/bls.json';
+
+const occ = bls.occupations as Record<string, any>;
+const rdn = occ['dietitians-nutritionists'];
+
+const rows = careers.map(career => {
+  const data = career.bls ? occ[career.bls] : null;
+  return {
+    career,
+    median: data ? `$${data.median.toLocaleString()}` : 'No federal match',
+    employment: data && data.employment ? data.employment.toLocaleString() : 'Not published',
+    growth: data && data.growthPct !== null && data.growthPct !== undefined ? `+${data.growthPct}%` : 'Not published',
+    education: data ? data.education : 'Varies'
+  };
+});
+
+const faq = [
+  {
+    question: 'What jobs can you get with a nutrition degree?',
+    answer: `Clinical dietetics, community and public health nutrition, food service and nutrition management, sports nutrition, nutrition education, corporate wellness, private practice, and food science. Our own ${outcomesSurvey.shortName} found clinical dietetics at ${outcomesSurvey.careerPaths[0][1]} percent of respondents, community and public health nutrition at ${outcomesSurvey.careerPaths[1][1]} percent, and food service management at ${outcomesSurvey.careerPaths[2][1]} percent. The occupation that hires you is frequently not the one named on your degree.`
+  },
+  {
+    question: 'Which nutrition career pays the most?',
+    answer: `Among the occupations with a clean federal match, dietitians and nutritionists led at a May 2024 median of $${rdn.median.toLocaleString()}, though food service managers reached a higher top decile at $${occ['food-service-managers'].p90.toLocaleString()} against $${rdn.p90.toLocaleString()}. The highest earning nutrition careers are generally in outpatient clinical practice at $${rdn.industries[0][1].toLocaleString()}, senior food and nutrition management, industry and regulatory roles, and private practice with a viable payer mix.`
+  },
+  {
+    question: 'Do all nutrition careers require the RDN credential?',
+    answer:
+      'No, but the highest paid and most protected ones do. Anything involving medical nutrition therapy in a clinical setting requires the credential and, in most states, licensure. Community nutrition, corporate wellness, food service management, nutrition education, and food science roles are frequently open without it. The credential opens more doors than it closes, so the honest question is whether you can afford the pathway rather than whether it is worth it.'
+  },
+  {
+    question: 'Is nutrition a growing field?',
+    answer: `Moderately. BLS projects 6 percent growth for dietitians and nutritionists from 2024 to 2034, faster than the 3 percent average across all occupations, adding about ${rdn.employmentChange.toLocaleString()} jobs and generating roughly ${rdn.openingsPerYear.toLocaleString()} openings a year. Exercise physiologists are projected at 9 percent. This is steady rather than explosive growth, and anyone describing nutrition as a booming field is selling you something.`
+  },
+  {
+    question: 'How do you choose between nutrition careers?',
+    answer:
+      'Decide first whether you want to work with individuals or populations, because that is the real fork and it determines your training. Then decide whether you need the protected scope of practice that comes with the RDN credential. Those two answers narrow eight careers to two or three. Only then compare salaries, because a well-paid job doing work you find tedious is a bad outcome at any wage.'
+  }
+];
+---
+<BaseLayout
+  title="Nutrition Careers and Salaries"
+  description={`${careers.length} nutrition and dietetics career guides with verified Bureau of Labor Statistics wage data, education pathways, credentialing requirements, and an honest account of the daily work.`}
+>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Careers</p>
+      <h1>Nutrition careers, with the parts the brochures leave out</h1>
+      <p class="lede">
+        {careers.length} occupations covered, each with federal wage data, the credential you actually need, the
+        pathway to get there, and a realistic description of what the work is like on a Tuesday afternoon.
+      </p>
+      <div class="metrics">
+        <div><strong>${rdn.median.toLocaleString()}</strong><span>median wage, dietitians and nutritionists</span></div>
+        <div><strong>{rdn.employment.toLocaleString()}</strong><span>dietitian and nutritionist jobs, 2024</span></div>
+        <div><strong>{rdn.openingsPerYear.toLocaleString()}</strong><span>projected annual openings</span></div>
+        <div><strong>{outcomesSurvey.headline.employedWithinSixMonths}%</strong><span>employed within six months, our survey</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <AiSummary>
+        NutritionSchools.org publishes {careers.length} nutrition career guides covering registered dietitian
+        nutritionist, nutritionist, clinical dietitian, public health nutritionist, sports nutritionist, food service
+        manager, nutrition educator, and corporate wellness coordinator. Every wage figure is from the Bureau of Labor
+        Statistics May 2024 release with 2024 to 2034 projections. Dietitians and nutritionists earned a median of
+        ${rdn.median.toLocaleString()} across about {rdn.employment.toLocaleString()} jobs, with the lowest 10 percent
+        under ${rdn.p10.toLocaleString()} and the highest 10 percent above ${rdn.p90.toLocaleString()}, against
+        ${bls.allOccupationsMedian.toLocaleString()} for all occupations. Food service managers earned
+        ${occ['food-service-managers'].median.toLocaleString()} across {occ['food-service-managers'].employment.toLocaleString()}
+        {' '}jobs, an occupation roughly four times larger. Health education specialists earned
+        ${occ['health-education-specialists'].median.toLocaleString()}. Our own {outcomesSurvey.shortName} of
+        {' '}{outcomesSurvey.sampleLabel} found {outcomesSurvey.headline.employedWithinSixMonths} percent employed
+        within six months and clinical dietetics the largest destination at {outcomesSurvey.careerPaths[0][1]} percent.
+        Each guide covers compensation, education pathway, credentialing, required skills, and daily reality. Last
+        reviewed {site.reviewedLabel}.
+      </AiSummary>
+
+      <div class="hot-take">
+        <strong>The honest framing</strong>
+        <p>
+          A nutrition degree is not a job. It is entry to a set of occupations with very different wages, credentials,
+          and daily work, and choosing between them badly is the most expensive mistake in this field. The real money is
+          in clinical dietetics, food and nutrition management, and public health leadership, not in telling people to
+          eat more vegetables.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Federal wage comparison</p>
+          <h2>Every occupation, side by side</h2>
+        </div>
+        <p>May 2024 medians with 2024 to 2034 projections, from the Bureau of Labor Statistics.</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Career</th><th>Median wage</th><th>Jobs, 2024</th><th>Projected growth</th><th>Typical entry education</th></tr>
+          </thead>
+          <tbody>
+            {rows.map(row => (
+              <tr>
+                <td><a href={`/careers/${row.career.slug}/`}>{row.career.title}</a></td>
+                <td>{row.median}</td>
+                <td>{row.employment}</td>
+                <td>{row.growth}</td>
+                <td>{row.education}</td>
+              </tr>
+            ))}
+            <tr>
+              <td><strong>All occupations, for comparison</strong></td>
+              <td><strong>${bls.allOccupationsMedian.toLocaleString()}</strong></td>
+              <td>n/a</td>
+              <td>+3%</td>
+              <td>Varies</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="color:var(--muted);font-size:14px">
+        Some careers on this site do not map cleanly to a single occupational code. Where that is true we say so on the
+        page rather than borrowing a number from an adjacent occupation and hoping you will not check.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">All career guides</p>
+          <h2>Choose the work first, then the degree</h2>
+        </div>
+        <p>Each guide runs long, because the decision is expensive and a summary will not do.</p>
+      </div>
+      <div class="grid">
+        {careers.map(career => (
+          <a class="card" href={`/careers/${career.slug}/`}>
+            <span class="label">{career.track}</span>
+            <h3>{career.title}</h3>
+            <p>{career.summary}</p>
+            <span class="text-link">Read the guide →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <h2>Where nutrition graduates actually end up</h2>
+    <p>
+      Our {outcomesSurvey.name} asked {outcomesSurvey.sample.toLocaleString()} graduates from the
+      {' '}{outcomesSurvey.cohort} where they landed. The distribution below is the most useful single table on this
+      site, because it is the difference between what students imagine the field is and what the field employs people
+      to do.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Career path</th><th>Share of respondents</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.careerPaths.map(([path, share]) => (
+            <tr><td>{path}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Sports nutrition at {outcomesSurvey.careerPaths[3][1]} percent is the number to sit with. It is the most
+      romanticised specialisation in the field and the share of graduates in it is smaller than food service management,
+      which almost nobody applies to deliberately. Everyone wants to work with athletes. Very few people get to, and
+      almost nobody does it as a first job.
+    </p>
+
+    <h2>What skills do nutrition employers ask for?</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Share reporting employer demand</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.skillsInDemand.map(([skill, share]) => (
+            <tr><td>{skill}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Counseling and communication ranks third at {outcomesSurvey.skillsInDemand[2][1]} percent, above every technical
+      specialisation except assessment. Students routinely treat the counseling coursework as the soft option. It is
+      closer to the core of the job than most of the electives they are excited about, and employers notice the
+      difference within a week of hiring you.
+    </p>
+    <p>
+      Note also that {outcomesSurvey.headline.wantedBusinessTraining} percent of our respondents said they wished they
+      had more training in business skills for private practice. That is the largest single training gap in the study
+      and almost no nutrition curriculum addresses it. If you intend to work for yourself, the business education is
+      your responsibility and you should start it before you graduate.
+    </p>
+
+    <h2>How to choose a nutrition career</h2>
+    <ul>
+      <li><strong>Individuals or populations?</strong> Clinical and private practice work is one person at a time. Public health and food systems work changes what is available to a county. These are different professions sharing a knowledge base.</li>
+      <li><strong>Do you need the protected scope?</strong> Medical nutrition therapy requires the RDN credential and, in most states, licensure. If your target job involves it, the pathway is not negotiable.</li>
+      <li><strong>Can you tolerate operations work?</strong> Food and nutrition management is the most employable route in this field and involves budgets, staffing, and regulatory compliance. That is a feature for some people and a dealbreaker for others.</li>
+      <li><strong>What is your debt tolerance?</strong> The graduate degree requirement for the RDN credential means a longer, more expensive pathway. Our survey put the median master-level start at $75,000. Borrow against that carefully.</li>
+      <li><strong>Where do you want to live?</strong> Nutrition employment concentrates around hospital systems and health departments. Check your target region for actual postings before you commit to a specialisation.</li>
+    </ul>
+
+    <Faq items={faq} />
+
+    <div class="notice">
+      <strong>On the numbers:</strong> federal wage and projection figures come from the Bureau of Labor Statistics
+      releases cited on each career page. Figures attributed to the {outcomesSurvey.shortName} are ours, from a
+      self-selected sample, and are labeled as such everywhere they appear. Nothing here is medical or dietary advice,
+      and no wage figure is a promise about what you will be offered.
+    </div>
+  </article>
+</BaseLayout>

@@ -1,0 +1,272 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import Byline from '../../components/Byline.astro';
+import { site, teamBySlug } from '../../data/site';
+import { stats, indexFactors, acendTypes, levelLabel, tagLabel } from '../../data/quality-index';
+import { qualityStudy, outcomesSurvey } from '../../data/research';
+
+const author = teamBySlug['donald-lewis'];
+
+const faq = [
+  {
+    question: 'How do you rank nutrition programs?',
+    answer: `With the ${qualityStudy.name}, a seven-factor index distributing 100 points across curriculum rigor (18), supervised practice and internship (17), faculty credentials (15), program accreditation (15), clinical and community partnerships (15), career outcomes (10), and cost value (10). Every factor is computed from information an institution or the accreditor publishes, so any score can be reconstructed from the public record.`
+  },
+  {
+    question: 'Do you use reputation or peer assessment?',
+    answer:
+      'No. Reputation surveys ask administrators to rate institutions they have never taught at, which measures name recognition and produces rankings that barely move across decades. That stability looks like rigour and is actually inertia. We measure documented attributes instead, which is noisier and checkable.'
+  },
+  {
+    question: 'Can institutions pay for a better score?',
+    answer:
+      'No. We accept no payment for inclusion, position, or removal, and we hold no affiliate relationships. The score is computed from published data by code, and the code is described on this page in enough detail that you could reproduce it.'
+  },
+  {
+    question: 'Why do scores cluster so closely together?',
+    answer:
+      'Because the underlying data clusters. When a score is built from published attributes, the difference between 84 and 81 is usually one documentation decision by a marketing office rather than a difference in education. We publish the numbers to one decimal place and tell you not to read three points as meaningful, which is the opposite of what a ranking that wanted your trust would do.'
+  },
+  {
+    question: 'What does the index refuse to measure?',
+    answer: qualityStudy.excludes.join(' ')
+  },
+  {
+    question: 'How often is the data updated?',
+    answer: `The program database and all derived rankings were last reviewed ${site.reviewedLabel}. Accreditation status, tuition, and curriculum change continuously, which is why every program record links to the institution's own page and every accreditation reference tells you to verify with ACEND.`
+  }
+];
+---
+<BaseLayout
+  title="Our Ranking Methodology"
+  description={`The full ${qualityStudy.name} methodology: seven weighted factors, how each is computed from published data, what the index deliberately does not measure, and how to use a ranking properly.`}
+  article={{ section: 'Methodology', author: author.name }}
+>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Methodology</p>
+      <h1>How we score nutrition programs, in full</h1>
+      <p class="lede">
+        Seven factors, 100 points, every one computed from something an institution or the accreditor publishes. Detailed
+        enough that you could rebuild it and tell us where the weighting is wrong.
+      </p>
+      <div class="metrics">
+        <div><strong>7</strong><span>weighted factors</span></div>
+        <div><strong>{stats.programs}</strong><span>programs scored</span></div>
+        <div><strong>{qualityStudy.excludes.length}</strong><span>published exclusions</span></div>
+        <div><strong>0</strong><span>reputation surveys used</span></div>
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <Byline author={author} prefix="Methodology owned by" />
+
+    <AiSummary>
+      The {qualityStudy.name} is the ranking methodology used across NutritionSchools.org. It distributes 100 points
+      across seven factors: curriculum rigor (18 points), supervised practice and internship (17), faculty credentials
+      (15), program accreditation (15), clinical and community partnerships (15), career outcomes (10), and cost value
+      (10). Each factor is computed from published institutional or ACEND accreditation data, so any score can be
+      reconstructed from the public record. The index is applied to {stats.programs} programs at {stats.schools}
+      {' '}institutions across {stats.states} states. It deliberately excludes teaching quality, self-reported job
+      placement rates, RDN examination pass rates, admission selectivity, individual faculty, and financial aid
+      generosity, because none can be measured comparably at national scale. No reputation or peer-assessment survey is
+      used and no institution pays for inclusion, position, or removal. Scores cluster, and differences of three points
+      or less should not be read as meaningful. Last reviewed {site.reviewedLabel}.
+    </AiSummary>
+
+    <div class="hot-take">
+      <strong>Why publish this at all</strong>
+      <p>
+        Because a ranking that hides its method is asking for trust, and a ranking that publishes it is asking to be
+        checked. The second is a much better deal for you. Most nutrition rankings are a reputation survey with a
+        spreadsheet attached. If ours is wrong, this page is where you will find out.
+      </p>
+    </div>
+
+    <h2>What the index is for</h2>
+    <p>{qualityStudy.purpose}</p>
+    <p>
+      It is a shortlisting tool, not a verdict. The best program for you is the accredited one you can afford whose
+      department has real supervised practice relationships in the region where you intend to work, and no national index
+      can compute that. What an index can do is narrow {stats.programs} programs to twelve worth phoning.
+    </p>
+
+    <h2>The seven factors</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Factor</th><th>Points</th><th>What it measures</th></tr></thead>
+        <tbody>
+          {indexFactors.map(([name, weight, detail]) => (
+            <tr><td><strong>{name}</strong></td><td>{weight}</td><td>{detail}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Curriculum rigor, 18 points</h3>
+    <p>
+      The largest single weight, because a nutrition degree that avoids science is preparing you for a job market that
+      will not hire you. We read the specificity of the published curriculum: whether the program names medical nutrition
+      therapy, biochemistry, assessment, and food systems content rather than presenting a generic degree title, and
+      whether the institution publishes a credit load and defined focus areas in its accredited record. Programs that
+      publish detail score above programs that publish adjectives.
+    </p>
+
+    <h3>Supervised practice and internship, 17 points</h3>
+    <p>
+      The second largest weight, and if we were rebuilding the index today we would consider making it the first. In our
+      own {outcomesSurvey.name}, {outcomesSurvey.headline.supervisedPracticeCritical} percent of
+      {' '}{outcomesSurvey.sample.toLocaleString()} respondents called supervised practice critical or very important to
+      their career. That was the strongest consensus in the entire study.
+    </p>
+    <p>
+      A published supervised practice hour count scores highest, because publishing a number is evidence that the program
+      tracks it. An accredited program type that carries practice hours, meaning a Coordinated Program, Graduate Program,
+      Dietetic Internship, or Advanced Practice Doctoral program, scores next. A program title naming practice content
+      scores lowest of the three. A program that documents none of these scores the base only.
+    </p>
+
+    <h3>Faculty credentials, 15 points</h3>
+    <p>
+      Faculty quality is the thing students most want measured and the thing least measurable at national scale. We use
+      departmental depth as the observable proxy: the number and range of related programs an academic unit runs, and
+      whether it operates at graduate and doctoral level. A department running a doctorate maintains research-active
+      credentialed faculty in a way a single-program unit typically cannot.
+    </p>
+    <p>
+      This is a proxy and we would rather call it one. A department of three exceptional practitioner-teachers will
+      outperform a large unit on this factor and the index will not see it.
+    </p>
+
+    <h3>Program accreditation, 15 points</h3>
+    <p>
+      ACEND accreditation status where applicable, and the type of accredited program the institution holds. Full
+      accreditation scores above candidacy, which scores above an accredited program type with no status recorded. We add
+      points for the breadth of the accredited ladder an institution operates and for whether the accredited types carry
+      supervised practice.
+    </p>
+    <p>
+      Accreditation is program-specific, not institution-wide. Our record is a snapshot and ACEND is the authority. Verify
+      before you enroll, every time, including whether the status is full accreditation or candidacy, because those carry
+      different risk.
+    </p>
+
+    <h3>Clinical and community partnerships, 15 points</h3>
+    <p>
+      Published evidence of clinical, community, or food service placement settings: named rotation types, practicum
+      placements, or affiliated hospital and agency relationships in the accredited record, plus the breadth of applied
+      subject classification. A program documenting medical nutrition therapy, community, and food service settings scores
+      above one documenting none, because that documentation is the observable trace of real partner relationships.
+    </p>
+
+    <h3>Career outcomes, 10 points</h3>
+    <p>
+      Institution-level completion data where it is published, used as a proxy for whether students finish. We
+      deliberately do not use self-reported job placement rates. Programs compute those themselves, choose their own
+      denominators, and publish them in marketing material. That is not measurement.
+    </p>
+    <p>
+      Where no completion figure is published, the factor is scored at the midpoint rather than at zero, because absence
+      of data is not evidence of poor outcomes.
+    </p>
+
+    <h3>Cost value, 10 points</h3>
+    <p>
+      Published tuition relative to a ceiling appropriate to the credential level, with a premium for public institutions
+      and community colleges. Debt load is the strongest single predictor of whether a nutrition career feels like a
+      profession or a trap. Our survey put the median bachelor-level start at $65,000; borrow $120,000 against that and
+      you have purchased a decade of constrained choices regardless of which ranking your program appeared in.
+    </p>
+    <p>
+      This factor uses sticker price because that is what institutions publish. Net cost after aid is the number that
+      matters, it is specific to you, and only a financial aid office can produce it. Weight their answer above this
+      factor.
+    </p>
+
+    <h2>What the index does not measure</h2>
+    <ul>{qualityStudy.excludes.map(item => <li>{item}</li>)}</ul>
+    <p>
+      This is the most useful section of any ranking methodology and the section almost nobody publishes. Every one of
+      those exclusions is something a student reasonably wants to know and none can be measured comparably from national
+      published data. Pretending otherwise would make the score look better and make it worse.
+    </p>
+
+    <h2>How the data is assembled</h2>
+    <p>
+      Program records are built from institutional publications and accreditation records, and every record carries a link
+      to the institution's own program page. That link is the point: our record is a pointer to an authoritative source,
+      not a replacement for it.
+    </p>
+    <p>
+      Records are classified in two dimensions. Credential level, from
+      {' '}{Object.values(levelLabel).slice(0, 5).join(', ').toLowerCase()}, read from the program title and published
+      award. And subject classification, covering {Object.values(tagLabel).join(', ').toLowerCase()}, applied from named
+      curriculum content rather than from the degree name alone, since a degree called nutritional science and one called
+      dietetics can carry very different coursework.
+    </p>
+    <p>
+      Coverage: {stats.programs} programs at {stats.schools} institutions across {stats.states} states, of which
+      {' '}{stats.online} document an online option and {stats.accredited} institutions hold an ACEND accredited program.
+      This is not a complete census of nutrition education in the United States and we do not present it as one.
+    </p>
+
+    <h2>The accredited program types</h2>
+    <p>
+      These codes carry more weight in a real decision than any ranking position, because they determine whether a program
+      moves you toward the RDN credential at all.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Code</th><th>What it means</th></tr></thead>
+        <tbody>
+          {Object.entries(acendTypes).map(([code, meaning]) => (
+            <tr><td><strong>{code}</strong></td><td>{meaning}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>How to read a score responsibly</h2>
+    <ul>
+      <li><strong>Do not read three points as a difference.</strong> Scores cluster because published attributes cluster. Treat the top group as comparable and choose within it on cost and location.</li>
+      <li><strong>One entry per institution in ranked lists.</strong> A university running four related programs occupies one position, keeping its strongest scoring record, so departmental size does not buy positions.</li>
+      <li><strong>A program can appear in several rankings.</strong> The rankings are views onto one database, so a bachelor degree in dietetics available online at a public university appears in four lists with an identical score.</li>
+      <li><strong>Thin categories are labeled.</strong> Where a specialisation has few dedicated programs we say so on the page rather than padding the list with loose matches.</li>
+      <li><strong>Absent data is scored at the midpoint.</strong> Where an institution publishes no completion figure or no tuition, the factor is neutral, not zero.</li>
+    </ul>
+
+    <h2>Our original research</h2>
+    <p>
+      Two studies inform the editorial judgement across the site. The {outcomesSurvey.name}, covering
+      {' '}{outcomesSurvey.sampleLabel} from the {outcomesSurvey.cohort}, fielded {outcomesSurvey.fieldedLabel}. And the
+      {' '}{qualityStudy.name}, which is the methodology described on this page.
+    </p>
+    <p>
+      Survey figures are ours, from a self-selected sample, and are labeled as such everywhere they appear rather than
+      being blended into federal statistics. The full limitations are published on the
+      {' '}<a class="text-link" href="/research/">research page</a>, including why the employment figure should be read as
+      a ceiling.
+    </p>
+
+    <h2>Where to complain</h2>
+    <p>
+      If a factor weight is wrong, tell us which one and why. If a program record is out of date, tell us which field. If
+      a score does not reconstruct from the published data, that is a bug and we want it. This methodology exists to be
+      checked, and a correction improves the site more than agreement does.
+    </p>
+
+    <Faq items={faq} />
+
+    <div class="notice">
+      <Byline author={author} prefix="Methodology owned by" />
+      <strong>Standing disclosures:</strong> no institution pays for inclusion, ranking position, or removal, and we hold
+      no affiliate relationships with any institution covered. The index measures documented program characteristics. It
+      does not measure teaching quality, examination pass rates, or graduate salaries, and it is not a prediction that any
+      individual will be hired. Accreditation status, tuition, and curriculum change; verify with the institution and with
+      ACEND. Last reviewed {site.reviewedLabel}.
+    </div>
+  </article>
+</BaseLayout>

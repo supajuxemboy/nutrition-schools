@@ -1,0 +1,396 @@
+/* NutritionSchools.org design system.
+   The palette is taken directly from the site logo: deep forest green for
+   structure, a fresh leaf green for emphasis, terracotta for opinion, and an
+   amber tone for machine-readable summaries, all on warm paper. */
+:root {
+  --ink: #1c2a24;
+  --muted: #5b6b62;
+  --paper: #f6f8f3;
+  --white: #fff;
+  --stone: #eaeee5;
+  --line: #d7ded0;
+  --forest: #0f3f2d;
+  --forest-deep: #0a2c1f;
+  --leaf: #3f7f42;
+  --leaf-light: #5aa04a;
+  --sprout: #8bc34a;
+  --terracotta: #b35625;
+  --amber: #c99331;
+  --berry: #7d3352;
+  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --shadow: 0 5px 18px rgba(15, 63, 45, .07);
+}
+
+* { box-sizing: border-box }
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f9fbf7 0, var(--paper) 45%, #f7f9f4 100%);
+  color: var(--ink);
+  font: 16px/1.65 var(--sans);
+  letter-spacing: -.01em;
+}
+a { color: inherit; text-decoration: none }
+main { min-height: 67vh }
+.wrap { width: min(1120px, calc(100% - 48px)); margin: auto }
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 99;
+  background: var(--forest); color: #fff; padding: 10px 16px; border-radius: 0 0 8px 0; font-weight: 700;
+}
+.skip-link:focus { left: 0 }
+
+/* ---------- header ---------- */
+header {
+  position: relative;
+  height: 78px;
+  background: rgba(255, 255, 255, .96);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(28px, calc((100vw - 1120px) / 2));
+  gap: 24px;
+}
+/* A growth gradient: the greens of the logo flattened into a rule. */
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--forest) 0 32%, var(--leaf) 32% 58%, var(--sprout) 58% 82%, var(--amber) 82% 100%);
+}
+.brand-logo { width: 238px; height: 52px; flex: 0 0 238px; display: block }
+.brand-logo img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: left center }
+nav { display: flex; gap: 22px; font-size: 13px; font-weight: 750; letter-spacing: -.02em }
+nav a { position: relative; padding: 7px 0; color: #2b3a33 }
+nav a:hover { color: var(--leaf) }
+nav a:hover::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 100%; height: 2px; background: var(--sprout);
+}
+
+/* ---------- hero ---------- */
+.hero {
+  padding: 80px 0 62px;
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 88% 4%, rgba(139, 195, 74, .22), transparent 32%),
+    radial-gradient(circle at 5% 100%, rgba(15, 63, 45, .10), transparent 30%),
+    linear-gradient(rgba(255, 255, 255, .5), rgba(255, 255, 255, .5)),
+    linear-gradient(90deg, rgba(15, 63, 45, .04) 1px, transparent 1px),
+    linear-gradient(rgba(15, 63, 45, .04) 1px, transparent 1px),
+    linear-gradient(125deg, #eaf0e6 0%, #fafbf7 55%, #eef2e8 100%);
+  background-size: auto, auto, auto, 28px 28px, 28px 28px, auto;
+}
+.eyebrow, .label {
+  color: var(--leaf);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+}
+.label { font-size: 11px; letter-spacing: 1.2px; margin: 0 }
+.hero h1, .page-title {
+  font: 700 clamp(40px, 5.5vw, 70px)/1.03 var(--serif);
+  letter-spacing: -.035em;
+  color: #12261d;
+  max-width: 900px;
+  margin: 0 0 22px;
+}
+.lede { font-size: 19px; color: var(--muted); max-width: 730px; margin: 0 }
+
+/* ---------- buttons ---------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 26px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--forest-deep), #185639);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 8px 18px rgba(10, 44, 31, .18);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.button:hover {
+  background: linear-gradient(135deg, var(--leaf), var(--leaf-light));
+  box-shadow: 0 11px 24px rgba(63, 127, 66, .28);
+  transform: translateY(-2px);
+}
+.text-link { color: var(--leaf); font-weight: 700 }
+.text-link:hover { color: var(--terracotta) }
+
+/* ---------- sections & cards ---------- */
+.section { padding: 72px 0 }
+.section.alt { background: #fff; border-block: 1px solid var(--line) }
+.section h2 {
+  font: 700 clamp(29px, 3.8vw, 45px)/1.07 var(--serif);
+  letter-spacing: -.03em;
+  color: #12261d;
+  margin: 0 0 18px;
+  max-width: 780px;
+}
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 30px }
+.section-head p { color: var(--muted); max-width: 540px; margin: 0 }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px }
+.grid.two { grid-template-columns: repeat(2, 1fr) }
+.card {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 26px;
+  box-shadow: var(--shadow);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+/* Growth stripe down the left edge of every card. */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(var(--forest) 0 38%, var(--leaf) 38% 70%, var(--sprout) 70% 90%, var(--amber) 90%);
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 15px 32px rgba(15, 63, 45, .13); border-color: #bcc7b3 }
+.card h3 { font: 700 24px/1.16 var(--serif); letter-spacing: -.02em; margin: 10px 0; color: #142a20 }
+.card p { color: var(--muted); margin: 0 0 14px }
+
+/* ---------- callouts ---------- */
+.ai-summary {
+  border-left: 5px solid var(--amber);
+  background: linear-gradient(100deg, #fdf7e8, #fff 70%);
+  padding: 22px 26px;
+  border-radius: 0 12px 12px 0;
+  margin: 34px 0;
+  max-width: 880px;
+  box-shadow: var(--shadow);
+}
+.ai-summary strong {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-size: 11px;
+  color: #8a6516;
+  margin-bottom: 7px;
+}
+.ai-summary p { margin: 0; color: #2f4238 }
+.notice {
+  padding: 20px 22px;
+  border: 1px solid #cfd8c6;
+  border-radius: 12px;
+  background: var(--stone);
+  color: #3a4a41;
+  margin: 30px 0;
+}
+.notice strong { color: var(--forest) }
+/* The opinionated pull-quote. Terracotta means "this is us talking". */
+.hot-take {
+  border-left: 5px solid var(--terracotta);
+  background: linear-gradient(100deg, #fdf0e8, #fff 72%);
+  padding: 22px 26px;
+  border-radius: 0 12px 12px 0;
+  margin: 32px 0;
+  max-width: 880px;
+}
+.hot-take strong {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-size: 11px;
+  color: var(--terracotta);
+  margin-bottom: 7px;
+}
+.hot-take p { margin: 0; color: #43301f; font-size: 17px }
+/* Original research callout, used where our own survey data appears. */
+.research {
+  border-left: 5px solid var(--berry);
+  background: linear-gradient(100deg, #fbf0f4, #fff 72%);
+  padding: 22px 26px;
+  border-radius: 0 12px 12px 0;
+  margin: 32px 0;
+  max-width: 880px;
+}
+.research strong {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-size: 11px;
+  color: var(--berry);
+  margin-bottom: 7px;
+}
+.research p { margin: 0 0 10px; color: #3b2b33 }
+.research p:last-child { margin-bottom: 0 }
+
+/* ---------- long-form content ---------- */
+.content { padding: 60px 0; max-width: 840px }
+.content h2 { font: 700 33px/1.12 var(--serif); letter-spacing: -.028em; margin: 46px 0 14px; color: #12261d }
+.content h3 { font: 700 24px/1.22 var(--serif); letter-spacing: -.02em; margin: 30px 0 9px; color: #142a20 }
+.content p, .content li { color: #2d423a }
+.content li { margin: 7px 0 }
+.content table, .table-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 24px 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.content th, .content td, .table-scroll th, .table-scroll td { padding: 13px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top }
+.content th, .table-scroll th { background: var(--stone); color: var(--forest); font-size: 11px; letter-spacing: .9px; text-transform: uppercase }
+.content tbody tr:last-child td, .content tbody tr:last-child th,
+.table-scroll tbody tr:last-child td { border-bottom: 0 }
+.table-scroll { overflow-x: auto; margin: 24px 0 }
+.table-scroll table { margin: 0 }
+.content blockquote { margin: 24px 0; padding-left: 20px; border-left: 3px solid var(--leaf); color: #3a5147; font-style: italic }
+
+details {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 13px 17px;
+  margin: 10px 0;
+  box-shadow: 0 2px 8px rgba(15, 63, 45, .04);
+}
+details[open] { border-color: #b6c9b4 }
+summary { cursor: pointer; font-weight: 700; color: var(--forest); letter-spacing: -.01em }
+details p { margin: 10px 0 2px }
+
+/* ---------- indexes ---------- */
+.state-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px }
+.state-grid a { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px }
+.state-grid a:hover { color: var(--leaf) }
+.state-grid a span { color: var(--muted); font-size: 12px }
+
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 46px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden }
+.metrics div { padding: 16px 17px; background: rgba(255, 255, 255, .7) }
+.metrics strong { display: block; font: 700 28px/1 var(--serif); color: var(--leaf) }
+.metrics span { display: block; font-size: 12px; line-height: 1.35; color: var(--muted); margin-top: 5px }
+
+/* Ranked program record, used on ranking and state pages. */
+.records { display: grid; gap: 17px; margin: 24px 0 }
+.record { display: grid; grid-template-columns: minmax(0, 1fr) 116px; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow) }
+.record > div { padding: 21px }
+.record h3 { margin: 4px 0; font: 700 21px/1.2 var(--serif); letter-spacing: -.02em }
+.record .school { color: var(--muted); font-size: 14px; font-weight: 700; margin: 0 0 8px }
+.record dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 }
+.record dl div { padding: 8px 0 0; border-top: 1px solid var(--line) }
+.record dt { font-size: 10px; text-transform: uppercase; letter-spacing: .7px; font-weight: 800; color: var(--muted) }
+.record dd { font-size: 13px; margin: 2px 0 }
+.record .button { border-radius: 9px; margin-top: 0; padding: 10px 14px; font-size: 13px }
+.record aside { background: var(--stone); border-left: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 21px 8px; text-align: center }
+.record aside span { font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: .7px; color: var(--muted) }
+.record aside strong { font: 700 32px/1 var(--serif); color: var(--leaf); margin-top: 8px }
+.record aside small { font-size: 11px; color: var(--muted); margin-top: 2px }
+
+/* Category chips on program listings. */
+.chip {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: 1px;
+  border: 1px solid currentColor;
+}
+.chip-dietetics { color: #0f3f2d }
+.chip-clinical { color: #1d5c7a }
+.chip-public-health { color: #3f7f42 }
+.chip-sports { color: #b35625 }
+.chip-nutritional-science { color: #5b5470 }
+.chip-food-service { color: #8a6516 }
+.chip-food-science { color: #7d3352 }
+.chip-nutrition-education { color: #2f6b5c }
+.chip-online { color: var(--terracotta) }
+.chip-acend { color: var(--forest); background: #e7f0e4 }
+.chip-legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 22px; padding: 0; list-style: none }
+.chip-legend li { font-size: 13px; color: var(--muted) }
+.chip-legend .chip { margin-left: 0 }
+
+/* Team bios. */
+.team { display: grid; gap: 18px; margin: 28px 0 }
+.bio { background: #fff; border: 1px solid var(--line); border-radius: 13px; padding: 26px; box-shadow: var(--shadow) }
+.bio { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 26px; align-items: start }
+.bio-photo { width: 128px; height: 128px; border-radius: 12px; object-fit: cover; display: block; border: 1px solid var(--line); box-shadow: var(--shadow) }
+.bio h3 { margin: 0 0 2px; font: 700 25px/1.15 var(--serif); letter-spacing: -.02em }
+.bio .role { color: var(--terracotta); font-weight: 800; font-size: 13px; letter-spacing: .3px; margin: 0 0 14px }
+.bio dl { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 8px 16px; margin: 16px 0 0; font-size: 14px }
+.bio dt { font-size: 10px; text-transform: uppercase; letter-spacing: .7px; font-weight: 800; color: var(--muted); padding-top: 3px }
+.bio dd { margin: 0; color: #2d423a }
+
+/* Byline: small circular headshot next to an author credit. */
+.byline { display: flex; align-items: center; gap: 13px; margin: 0 0 6px }
+.byline img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex: 0 0 44px; border: 1px solid var(--line) }
+.byline div { min-width: 0 }
+.byline strong { display: block; font-size: 14px; font-weight: 800; letter-spacing: -.01em; color: var(--ink) }
+.byline span { display: block; font-size: 12.5px; color: var(--muted) }
+.notice .byline { margin-bottom: 10px }
+
+/* Survey figure strip, used on research and homepage. */
+.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 26px 0 }
+.figure {
+  background: #fff; border: 1px solid var(--line); border-radius: 12px;
+  padding: 20px; box-shadow: var(--shadow);
+}
+.figure strong { display: block; font: 700 34px/1 var(--serif); color: var(--forest) }
+.figure span { display: block; font-size: 13px; color: var(--muted); margin-top: 8px }
+
+/* ---------- footer ---------- */
+footer {
+  background: linear-gradient(145deg, #082419, var(--forest-deep) 55%, #12503a);
+  border-top: 3px solid var(--sprout);
+  color: #e8efe9;
+  padding: 52px max(28px, calc((100vw - 1120px) / 2));
+  display: grid;
+  grid-template-columns: 1.4fr .7fr 1.2fr;
+  gap: 56px;
+  font-size: 14px;
+}
+.footer-logo { display: block; width: 214px; height: 52px; border-radius: 8px; overflow: hidden; background: #fff; padding: 6px 10px }
+.footer-logo img { display: block; width: 100%; height: 100%; object-fit: contain }
+footer p { color: #b7cbbe; margin: 12px 0 }
+footer strong { display: block; color: var(--sprout); margin-bottom: 12px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase }
+footer a:not(.footer-logo) { display: block; margin: 7px 0; color: #d1e0d6 }
+footer a:not(.footer-logo):hover { color: #fff }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .grid, .grid.two { grid-template-columns: repeat(2, 1fr) }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+  .figures { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+}
+@media (max-width: 760px) {
+  header { height: 70px; padding: 0 22px; gap: 14px }
+  .brand-logo { width: 188px; height: 44px; flex: 0 0 188px }
+  nav { gap: 13px; font-size: 11.5px }
+  .hero { padding: 56px 0 46px }
+  .grid, .grid.two, .figures { grid-template-columns: 1fr }
+  .state-grid { grid-template-columns: repeat(2, 1fr) }
+  .section { padding: 52px 0 }
+  .section-head { display: block }
+  .section-head p { margin-top: 12px }
+  .record { grid-template-columns: 1fr }
+  .record aside { border-left: 0; border-top: 1px solid var(--line); flex-direction: row; justify-content: center; gap: 8px; padding: 11px }
+  .record aside strong { margin: 0 }
+  .record dl { grid-template-columns: 1fr }
+  .bio { grid-template-columns: 1fr; gap: 16px }
+  .bio-photo { width: 96px; height: 96px }
+  .bio dl { grid-template-columns: 1fr; gap: 2px 0 }
+  .bio dt { margin-top: 10px }
+  footer { grid-template-columns: 1fr; gap: 30px }
+}
+@media (max-width: 560px) {
+  header { height: auto; padding: 14px 20px; align-items: flex-start; flex-direction: column }
+  nav { width: 100%; justify-content: space-between; gap: 8px; overflow-x: auto }
+  .content { padding: 44px 0 }
+}

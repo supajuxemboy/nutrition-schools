@@ -1,0 +1,60 @@
+---
+import type { ScoredProgram } from '../data/quality-index';
+import { levelLabel } from '../data/quality-index';
+
+interface Props { programs: ScoredProgram[]; showState?: boolean }
+const { programs, showState = false } = Astro.props;
+
+const money = (value: number | null) => (value === null ? null : `$${value.toLocaleString()}`);
+---
+<div class="records">
+  {programs.map((program, index) => (
+    <section class="record">
+      <div>
+        <p class="label">
+          {levelLabel[program.level] ?? 'Program'}{program.online ? ' · Online available' : ''}
+          {program.acendType ? ` · ACEND: ${program.acendType}` : ''}
+        </p>
+        <h3>{program.program}</h3>
+        <p class="school">{program.school}{showState ? ` · ${program.stateName}` : ''}</p>
+        <dl>
+          <div>
+            <dt>Location</dt>
+            <dd>{program.location || 'See program page'}</dd>
+          </div>
+          <div>
+            <dt>Delivery</dt>
+            <dd>{program.online ? 'Online option documented' : 'On campus'}</dd>
+          </div>
+          <div>
+            <dt>Published tuition</dt>
+            <dd>{money(program.tuition) ?? 'See program page'}</dd>
+          </div>
+          <div>
+            <dt>Accreditation</dt>
+            <dd>{program.accreditation || (program.acendType ? 'ACEND program at this school' : 'Not an ACEND program')}</dd>
+          </div>
+          <div>
+            <dt>Completion rate</dt>
+            <dd>{program.gradRate === null ? 'Not published' : `${program.gradRate}% institution wide`}</dd>
+          </div>
+          <div>
+            <dt>Control</dt>
+            <dd>{program.control || 'See program page'}</dd>
+          </div>
+        </dl>
+        {program.acendDetail && (
+          <p style="font-size:13.5px;color:var(--muted);margin:0 0 14px">{program.acendDetail}</p>
+        )}
+        <a class="button" href={program.url} target="_blank" rel="noopener noreferrer">
+          Visit official program page <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <aside>
+        <span>#{index + 1} · Quality Index</span>
+        <strong>{program.score.toFixed(1)}</strong>
+        <small>of 100</small>
+      </aside>
+    </section>
+  ))}
+</div>

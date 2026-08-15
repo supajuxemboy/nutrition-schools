@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { levels, specialties, modifiers } from '../data/site';
+import { careers } from '../data/careers';
+import { resources } from '../data/resources';
+---
+<BaseLayout title="Page Not Found" description="That page does not exist. Here is where to find nutrition program rankings, career guides, credentials, and state pages.">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">404</p>
+      <h1>That page does not exist</h1>
+      <p class="lede">
+        Either we moved it or the link was wrong. Here are the places worth starting instead.
+      </p>
+      <div class="hero-actions" style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+        <a class="button" href="/">Back to the homepage <span aria-hidden="true">→</span></a>
+        <a class="text-link" href="/rankings/">Browse all rankings →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="grid">
+        <a class="card" href="/rankings/">
+          <span class="label">Rankings</span>
+          <h3>{levels.length + specialties.length + modifiers.length} program rankings</h3>
+          <p>By degree level, by specialty, and by format and cost, all scored on the published Quality Index.</p>
+          <span class="text-link">See the rankings →</span>
+        </a>
+        <a class="card" href="/careers/">
+          <span class="label">Careers</span>
+          <h3>{careers.length} career guides</h3>
+          <p>Federal wage data, education pathways, credentials, and an honest account of the daily work.</p>
+          <span class="text-link">Read the guides →</span>
+        </a>
+        <a class="card" href="/resources/">
+          <span class="label">Guides</span>
+          <h3>{resources.length} long-form analyses</h3>
+          <p>From the nutrition against dietetics question to the full salary guide and the RDN pathway.</p>
+          <span class="text-link">Start reading →</span>
+        </a>
+        <a class="card" href="/states/">
+          <span class="label">States</span>
+          <h3>Programs in all 51 jurisdictions</h3>
+          <p>Local programs, public health agencies, employer categories, and supervised practice context.</p>
+          <span class="text-link">Find your state →</span>
+        </a>
+        <a class="card" href="/certifications/">
+          <span class="label">Credentials</span>
+          <h3>Which certifications carry authority</h3>
+          <p>The RDN and the credentials built on top of it, against the ones marketed as though they were.</p>
+          <span class="text-link">Compare credentials →</span>
+        </a>
+        <a class="card" href="/research/">
+          <span class="label">Research</span>
+          <h3>Our original studies</h3>
+          <p>A survey of 1,154 graduates and the seven-factor index, published with the limitations attached.</p>
+          <span class="text-link">Read the research →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

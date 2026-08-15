@@ -1,0 +1,188 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import { stateList, site } from '../../data/site';
+import { allPrograms, stats } from '../../data/quality-index';
+import bls from '../../data/bls.json';
+
+const rdn = bls.occupations['dietitians-nutritionists'];
+
+const counts = stateList.map(([slug, name]) => {
+  const programs = allPrograms.filter(p => p.state === slug);
+  return {
+    slug,
+    name,
+    programs: programs.length,
+    schools: new Set(programs.map(p => p.school)).size,
+    acend: programs.filter(p => p.acendType.trim().length > 0).length,
+    online: programs.filter(p => p.online).length
+  };
+});
+
+const withPrograms = counts.filter(c => c.programs > 0).sort((a, b) => b.programs - a.programs);
+const without = counts.filter(c => c.programs === 0);
+
+const faq = [
+  {
+    question: 'Does it matter which state you study nutrition in?',
+    answer:
+      'More than students expect, for two reasons. Supervised practice placements are local, so a program with real relationships to hospitals and health departments in your region is worth more to you than a better-branded program two thousand miles away. And licensure is granted by states, with rules that differ, so studying where you intend to practise removes a set of problems you would otherwise have to solve later.'
+  },
+  {
+    question: 'Can you use a nutrition degree from one state to work in another?',
+    answer:
+      'Generally yes. The RDN credential is national, granted by the Commission on Dietetic Registration, and accredited coursework from any state counts. What is not portable is licensure: each state board sets its own requirements and you apply separately. Check the board in the state you intend to work in before you assume the transition is automatic.'
+  },
+  {
+    question: 'Which states have the most nutrition programs?',
+    answer: `In our database, ${withPrograms.slice(0, 5).map(s => `${s.name} (${s.programs})`).join(', ')}. That distribution mostly tracks population and the number of public universities, not quality. A state with three programs may serve students better than one with twelve if the three have strong hospital relationships.`
+  },
+  {
+    question: 'What if my state has no programs in your database?',
+    answer: `Then either there genuinely are few or none, or our database has not captured them, and we would rather say that than pretend otherwise. Our coverage is ${stats.programs} programs at ${stats.schools} institutions across ${stats.states} states, and it is not exhaustive. If your state page is thin, check the neighbouring states listed on it and consider an accredited online program with local placement support.`
+  },
+  {
+    question: 'Where do nutrition graduates get hired in each state?',
+    answer:
+      'Hospital systems, outpatient clinics, long-term care facilities, the state public health agency and its WIC program, county health departments, school districts, federally qualified health centers, food banks, and university extension services. Extension services are the most consistently overlooked employer in that list.'
+  }
+];
+---
+<BaseLayout
+  title="Nutrition Programs by State"
+  description={`Nutrition and dietetics programs in all 50 states and the District of Columbia, with links to every official program page, state public health agency context, and local employer information.`}
+>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Programs by state</p>
+      <h1>Nutrition and dietetics programs by state</h1>
+      <p class="lede">
+        Where you study decides where you can complete supervised practice, and supervised practice decides your career.
+        These pages list the programs in our database by state, with the public health agencies and employer categories
+        that hire nutrition graduates locally.
+      </p>
+      <div class="metrics">
+        <div><strong>{stats.programs}</strong><span>programs tracked</span></div>
+        <div><strong>{stats.schools}</strong><span>institutions</span></div>
+        <div><strong>{stats.states}</strong><span>states with a program in our database</span></div>
+        <div><strong>51</strong><span>state pages, including DC</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <AiSummary>
+        NutritionSchools.org publishes nutrition and dietetics program pages for all 50 US states and the District of
+        Columbia. Our database holds {stats.programs} programs at {stats.schools} institutions across {stats.states}
+        {' '}states, each linked to its official program page, with {stats.online} documenting an online option and
+        {' '}{stats.accredited} institutions holding an ACEND accredited program. The states with the most programs in our
+        database are {withPrograms.slice(0, 5).map(s => `${s.name} (${s.programs})`).join(', ')}. Each state page lists
+        the programs we track, the state public health agency that administers WIC and community nutrition programs, the
+        accredited supervised practice providers we can identify locally, and the employer categories that hire nutrition
+        graduates in that state. The Bureau of Labor Statistics reported a May 2024 national median wage of
+        ${rdn.median.toLocaleString()} for dietitians and nutritionists across about
+        {' '}{rdn.employment.toLocaleString()} jobs. The RDN credential is national but licensure is granted state by
+        state, so check your own board. Last reviewed {site.reviewedLabel}.
+      </AiSummary>
+
+      <div class="hot-take">
+        <strong>Why geography matters more than ranking</strong>
+        <p>
+          Supervised practice placements are local relationships between a department and a hospital. A program in the
+          region where you intend to work has those relationships. A more prestigious program two time zones away does
+          not, and it cannot lend you the ones it has. This is the single most underweighted factor in program choice.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt">
+    <div class="wrap">
+      <h2>Every state</h2>
+      <p class="lede">Program counts are from our own database and are not a claim of completeness.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>State</th><th>Programs tracked</th><th>Institutions</th><th>At ACEND schools</th><th>Online option</th></tr></thead>
+          <tbody>
+            {counts.map(state => (
+              <tr>
+                <td><a href={`/states/${state.slug}/`}>{state.name}</a></td>
+                <td>{state.programs || 'None in our database'}</td>
+                <td>{state.schools || '0'}</td>
+                <td>{state.acend || '0'}</td>
+                <td>{state.online || '0'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <h2>How to use a state page</h2>
+    <p>
+      Start with the program list and open the official pages, because those are authoritative and our records are
+      pointers to them. Then read the supervised practice section, which is the part that determines whether the program
+      can actually get you credentialed. Then look at the employer categories, and go find live job postings from those
+      employers to see what credentials they name.
+    </p>
+    <p>
+      If your state has few or no programs in our database, that is worth knowing rather than hiding. Look at the
+      neighbouring states listed on the page, and consider an accredited online program that arranges local placements.
+      For many students in low-density states that is the only realistic route, and it is a legitimate one.
+    </p>
+
+    <h2>Licensure is a state matter</h2>
+    <p>
+      The RDN credential is national. Licensure is not. Some states license dietitians, some certify them, some regulate
+      the title nutritionist, and some do not regulate it at all. The requirements to obtain a licence, and whether you
+      may practise while an application is pending, differ.
+    </p>
+    <p>
+      There is no substitute for reading your own state board rules, and there is no shortcut we can offer you that
+      replaces it. Every state page names the public health agency; the licensing board is frequently a separate body and
+      you should locate it specifically. See the
+      {' '}<a class="text-link" href="/certifications/ln/">state licensure guide</a> for how to approach that.
+    </p>
+
+    <h2>States with the deepest coverage in our database</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>State</th><th>Programs</th><th>Institutions</th></tr></thead>
+        <tbody>
+          {withPrograms.slice(0, 12).map(state => (
+            <tr><td><a href={`/states/${state.slug}/`}>{state.name}</a></td><td>{state.programs}</td><td>{state.schools}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      That ordering reflects population and the density of public universities, not educational quality. Do not read a
+      high count as an endorsement or a low count as a warning.
+    </p>
+
+    {without.length > 0 && (
+      <>
+        <h2>States where our coverage is thin</h2>
+        <p>
+          We have no programs recorded in {without.length} of the 51 jurisdictions: {without.map(s => s.name).join(', ')}.
+          Some of these genuinely have few or no institutions offering a nutrition or dietetics credential. In others our
+          database has simply not captured what exists. We publish the gap rather than filling it with guesses, and each
+          of those pages points you to the neighbouring states and to accredited online options.
+        </p>
+      </>
+    )}
+
+    <Faq items={faq} />
+
+    <div class="notice">
+      <strong>Coverage note:</strong> our database holds {stats.programs} programs at {stats.schools} institutions across
+      {' '}{stats.states} states and is not a complete census of nutrition education in the United States. Program
+      details, tuition, and accreditation status change. Every listing links to the institution's own page, which is the
+      authoritative source, and ACEND is authoritative on accreditation.
+    </div>
+  </article>
+</BaseLayout>

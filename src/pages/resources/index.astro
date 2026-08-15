@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import { resources } from '../../data/resources';
+import { site, teamBySlug } from '../../data/site';
+import { outcomesSurvey } from '../../data/research';
+import { stats } from '../../data/quality-index';
+---
+<BaseLayout
+  title="Nutrition Career and Education Guides"
+  description={`${resources.length} long-form guides on nutrition and dietetics education, credentialing, salaries, and career strategy, built on federal data and our own graduate research.`}
+>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Guides and analysis</p>
+      <h1>The questions worth answering before you enroll</h1>
+      <p class="lede">
+        {resources.length} long-form guides from our team. Each one takes a position, supports it with data, and names
+        the source. If we disagree with the conventional advice we say so and show you why.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <AiSummary>
+        NutritionSchools.org publishes {resources.length} long-form guides on nutrition and dietetics education and
+        careers, covering the difference between nutrition and dietetics, the step by step pathway to the RDN
+        credential, what nutrition degree jobs actually exist, whether a nutrition degree is worth it, whether online
+        nutrition degrees are respected, a full salary guide, and a sports nutrition career guide. Every guide is built
+        on Bureau of Labor Statistics wage and projection data, our database of {stats.programs} programs at
+        {' '}{stats.schools} institutions, and our own {outcomesSurvey.name} of {outcomesSurvey.sampleLabel}, which found
+        {' '}{outcomesSurvey.headline.employedWithinSixMonths} percent employed within six months and
+        {' '}{outcomesSurvey.headline.supervisedPracticeCritical} percent calling supervised practice critical to their
+        career. Each guide is reviewed by a named credentialed member of our team and states its limitations. Last
+        reviewed {site.reviewedLabel}.
+      </AiSummary>
+
+      <div class="grid">
+        {resources.map(resource => {
+          const author = teamBySlug[resource.author] ?? site.team[0];
+          return (
+            <a class="card" href={`/resources/${resource.slug}/`}>
+              <span class="label">{resource.kicker}</span>
+              <h3>{resource.title}</h3>
+              <p>{resource.summary}</p>
+              <span class="text-link">Read the guide →</span>
+              <p style="font-size:12.5px;color:var(--muted);margin:12px 0 0">Reviewed by {author.name}</p>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <h2>How we write these guides</h2>
+    <p>
+      Every guide separates four things and labels them. Facts an institution publishes about itself. Accreditation
+      records from ACEND and the Commission on Dietetic Registration. Federal data, cited by release and date. And our
+      own editorial opinion, which is marked as opinion rather than smuggled in as fact.
+    </p>
+    <p>
+      That structure exists because most nutrition education content on the internet blends all four, which makes it
+      impossible to check and therefore useless for a decision that costs six figures. If you can tell which sentence is
+      a measurement and which is a judgement, you can disagree with the judgement and keep the measurement.
+    </p>
+    <p>
+      Every guide is reviewed by a named member of our team who holds a relevant credential, and the reviewer appears at
+      the top and bottom of the page. You can read their qualifications on the
+      {' '}<a class="text-link" href="/about/">about page</a>, and the standards we hold ourselves to are on the
+      {' '}<a class="text-link" href="/methodology/">methodology page</a>.
+    </p>
+
+    <h2>Where to start</h2>
+    <ul>
+      <li>If you do not yet know whether you want dietetics or nutrition, read <a class="text-link" href="/resources/nutrition-vs-dietetics-whats-the-difference/">the field comparison</a> first. It is the fork that determines everything else.</li>
+      <li>If you have decided on the credential, read <a class="text-link" href="/resources/how-to-become-a-registered-dietitian-step-by-step/">the RDN pathway</a> and then check the <a class="text-link" href="/rankings/best-nutrition-masters-programs/">masters rankings</a>.</li>
+      <li>If you are weighing the money, read <a class="text-link" href="/resources/nutrition-salary-guide-2026/">the salary guide</a> and <a class="text-link" href="/resources/is-nutrition-degree-worth-it/">the return on investment analysis</a>.</li>
+      <li>If online study is your only realistic option, read <a class="text-link" href="/resources/online-nutrition-degrees-are-they-respected/">the online degree guide</a>, which is mostly about supervised practice rather than about format.</li>
+    </ul>
+  </article>
+</BaseLayout>

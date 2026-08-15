@@ -1,0 +1,184 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import Prose from '../../components/Prose.astro';
+import Byline from '../../components/Byline.astro';
+import { certifications } from '../../data/certifications';
+import { careers } from '../../data/careers';
+import { site, teamBySlug } from '../../data/site';
+import { outcomesSurvey } from '../../data/research';
+import bls from '../../data/bls.json';
+
+export function getStaticPaths() {
+  return certifications.map(cert => ({ params: { slug: cert.slug }, props: { cert } }));
+}
+
+const { cert } = Astro.props;
+const author = teamBySlug[cert.author] ?? site.team[0];
+const occ = bls.occupations as Record<string, any>;
+const rdn = bls.occupations['dietitians-nutritionists'];
+const relatedCareers = careers
+  .filter(c => c.certifications.includes(cert.slug))
+  .map(c => ({ career: c, data: c.bls ? occ[c.bls] : null }));
+
+const wordCount = [
+  cert.takeaway, cert.hotTake, cert.for,
+  ...cert.facts.map(f => f[1]),
+  ...cert.costs.rows.map(r => r[1]),
+  ...cert.studyResources,
+  ...cert.sections.flatMap(s => [...s.paragraphs, ...(s.bullets ?? [])]),
+  ...cert.faq.map(f => f.answer)
+].join(' ').split(/\s+/).length;
+
+const credentialSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'EducationalOccupationalCredential',
+  name: cert.title,
+  alternateName: cert.short,
+  description: cert.takeaway,
+  credentialCategory: 'certification',
+  recognizedBy: { '@type': 'Organization', name: cert.issuer, url: cert.issuerUrl },
+  url: new URL(`/certifications/${cert.slug}/`, site.url).toString()
+};
+---
+<BaseLayout
+  title={`${cert.title} (${cert.short}): Requirements, Exam, and Cost`}
+  description={`${cert.short} credential guide: eligibility requirements, examination detail, real costs, study resources, and what it actually permits you to do. Issued by ${cert.issuer}.`}
+  article={{ section: 'Certifications', author: author.name }}
+>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(credentialSchema)} />
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">{cert.short}</p>
+      <h1>{cert.title}</h1>
+      <p class="lede">{cert.takeaway}</p>
+      <div class="hero-actions">
+        <a class="button" href={cert.issuerUrl} target="_blank" rel="noopener noreferrer">
+          {cert.issuer} <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <Byline author={author} />
+
+    <AiSummary>
+      {cert.title}, abbreviated {cert.short}, is issued by {cert.issuer}. {cert.takeaway} Who it is for:
+      {' '}{cert.for} Key requirements at a glance: {cert.facts.slice(0, 3).map(f => `${f[0]}, ${f[1]}`).join(' ')}
+      {' '}Federal context: the Bureau of Labor Statistics reported a May 2024 median annual wage of
+      {' '}${rdn.median.toLocaleString()} for dietitians and nutritionists against
+      {' '}${bls.allOccupationsMedian.toLocaleString()} for all occupations, and our own {outcomesSurvey.shortName} of
+      {' '}{outcomesSurvey.sampleLabel} found {outcomesSurvey.headline.employerHiringDifficulty} percent of employers
+      struggling to find qualified RDN candidates. Fees, eligibility rules, and continuing education requirements are
+      set by the issuing body and change, so confirm everything on this page directly with {cert.issuer} before you
+      spend money. Reviewed by {author.name}, {author.role}. Last updated {site.reviewedLabel}.
+    </AiSummary>
+
+    <div class="hot-take">
+      <strong>Our take</strong>
+      <p>{cert.hotTake}</p>
+    </div>
+
+    <h2>Who this credential is for</h2>
+    <p>{cert.for}</p>
+
+    <h2>The requirements, line by line</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Requirement</th><th>Detail</th></tr></thead>
+        <tbody>
+          {cert.facts.map(([label, detail]) => (
+            <tr><td><strong>{label}</strong></td><td>{detail}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Every line above should be confirmed with
+      {' '}<a href={cert.issuerUrl} target="_blank" rel="noopener noreferrer">{cert.issuer}</a> before you act on it.
+      Credentialing bodies revise requirements, and a page on a third-party site, including this one, is not the
+      authority on what you owe them this year.
+    </p>
+
+    <h2>What it costs, honestly</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>{cert.costs.head[0]}</th><th>{cert.costs.head[1]}</th></tr></thead>
+        <tbody>
+          {cert.costs.rows.map(([label, detail]) => (
+            <tr><td><strong>{label}</strong></td><td>{detail}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      We describe cost categories rather than quoting dollar figures for fees that change annually, because a stale
+      number is worse than no number. The categories are the useful part: they tell you what to budget for, including
+      the lines candidates routinely forget.
+    </p>
+
+    <h2>How to prepare</h2>
+    <ul>{cert.studyResources.map(resource => <li>{resource}</li>)}</ul>
+
+    <Prose sections={cert.sections} />
+
+    {relatedCareers.length > 0 && (
+      <>
+        <h2>Careers this credential supports</h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Career</th><th>Track</th><th>Federal median wage</th></tr></thead>
+            <tbody>
+              {relatedCareers.map(({ career, data }) => (
+                <tr>
+                  <td><a href={`/careers/${career.slug}/`}>{career.title}</a></td>
+                  <td>{career.track}</td>
+                  <td>{data ? `$${data.median.toLocaleString()}` : 'No separate federal code'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
+
+    <h2>What this means for you</h2>
+    <p>
+      Before you commit money, do three things. Confirm the current eligibility rules with
+      {' '}<a href={cert.issuerUrl} target="_blank" rel="noopener noreferrer">{cert.issuer}</a> directly. Read twenty
+      live job postings for the roles you want and count how many name this credential specifically. And check your own
+      state board, because a national credential and a state licence are different instruments and only one of them
+      controls whether you may practise.
+    </p>
+    <p>
+      If the postings do not name it and your state does not require it, the credential may still be worth holding, but
+      you should be able to say out loud what you expect it to buy you. Credentials collected without a reason are an
+      expensive hobby.
+    </p>
+    <p>
+      Related reading:
+      {' '}<a class="text-link" href="/certifications/">all credentials compared</a>,
+      {' '}<a class="text-link" href="/careers/">career guides by occupation</a>,
+      {' '}<a class="text-link" href="/resources/how-to-become-a-registered-dietitian-step-by-step/">the step by step RDN pathway</a>, and
+      {' '}<a class="text-link" href="/rankings/">accredited program rankings</a>.
+    </p>
+
+    <Faq items={cert.faq} />
+
+    <div class="notice">
+      <Byline author={author} prefix="Reviewed by" />
+      <strong>Confirm at source:</strong> {cert.issuer} sets the requirements, fees, and continuing education rules for
+      this credential and revises them periodically. Nothing on this page is a substitute for their published
+      documentation, and nothing here is legal advice about scope of practice. State licensure is separate from
+      certification and is governed by your state board. Last reviewed {site.reviewedLabel}. This guide runs roughly
+      {' '}{wordCount.toLocaleString()} words.
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .hero-actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap }
+</style>

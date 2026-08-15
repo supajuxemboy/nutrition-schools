@@ -1,0 +1,266 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import Prose from '../../components/Prose.astro';
+import Byline from '../../components/Byline.astro';
+import { careers } from '../../data/careers';
+import { certBySlug } from '../../data/certifications';
+import { site, teamBySlug } from '../../data/site';
+import { outcomesSurvey } from '../../data/research';
+import bls from '../../data/bls.json';
+
+export function getStaticPaths() {
+  return careers.map(career => ({ params: { slug: career.slug }, props: { career } }));
+}
+
+const { career } = Astro.props;
+const occ = bls.occupations as Record<string, any>;
+const data = career.bls ? occ[career.bls] : null;
+const author = teamBySlug[career.author] ?? site.team[0];
+const linkedCerts = career.certifications.map(slug => certBySlug[slug]).filter(Boolean);
+
+const wordCount = [
+  career.fit, career.reality, career.hotTake,
+  ...career.pathway.map(p => p.detail),
+  ...career.sections.flatMap(s => [...s.paragraphs, ...(s.bullets ?? [])]),
+  ...career.faq.map(f => f.answer)
+].join(' ').split(/\s+/).length;
+
+const occupationSchema = data
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Occupation',
+      name: career.title,
+      description: career.summary,
+      occupationalCategory: data.soc,
+      estimatedSalary: {
+        '@type': 'MonetaryAmountDistribution',
+        name: 'base',
+        currency: 'USD',
+        duration: 'P1Y',
+        median: data.median,
+        percentile10: data.p10 ?? undefined,
+        percentile90: data.p90 ?? undefined
+      },
+      qualifications: data.education,
+      occupationLocation: { '@type': 'Country', name: 'United States' }
+    }
+  : null;
+---
+<BaseLayout
+  title={`${career.title} Career, Salary, and Requirements`}
+  description={`${career.title}: ${data ? `Bureau of Labor Statistics May 2024 median of $${data.median.toLocaleString()}, ` : ''}education pathway, credentialing requirements, compensation tables, required skills, and an honest account of the daily work.`}
+  article={{ section: 'Careers', author: author.name }}
+>
+  {occupationSchema && (
+    <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(occupationSchema)} />
+  )}
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">{career.track}</p>
+      <h1>{career.title}</h1>
+      <p class="lede">{career.summary}</p>
+      {data ? (
+        <div class="metrics">
+          <div><strong>${data.median.toLocaleString()}</strong><span>median annual wage, May 2024</span></div>
+          <div><strong>{data.employment ? data.employment.toLocaleString() : 'Not published'}</strong><span>jobs held, 2024</span></div>
+          <div><strong>{data.growthPct !== null && data.growthPct !== undefined ? `+${data.growthPct}%` : 'Not published'}</strong><span>projected growth to 2034</span></div>
+          <div><strong>{data.p90 ? `$${data.p90.toLocaleString()}` : 'Not published'}</strong><span>top 10 percent of earners</span></div>
+        </div>
+      ) : (
+        <div class="metrics">
+          <div><strong>No federal code</strong><span>this role is not counted separately by BLS</span></div>
+          <div><strong>{outcomesSurvey.headline.employedWithinSixMonths}%</strong><span>employed within six months, our survey</span></div>
+          <div><strong>{outcomesSurvey.sample.toLocaleString()}</strong><span>graduates surveyed</span></div>
+          <div><strong>{site.reviewedLabel}</strong><span>last reviewed</span></div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <Byline author={author} />
+
+    <AiSummary>
+      {career.title}: {career.summary} {data
+        ? `The Bureau of Labor Statistics reported a May 2024 median annual wage of $${data.median.toLocaleString()} for ${data.label.toLowerCase()}, occupational code ${data.soc}${data.employment ? `, across about ${data.employment.toLocaleString()} jobs` : ''}${data.p10 && data.p90 ? `, with the lowest 10 percent under $${data.p10.toLocaleString()} and the highest 10 percent above $${data.p90.toLocaleString()}` : ''}${data.growthPct !== null && data.growthPct !== undefined ? `, and ${data.growthPct} percent projected growth from 2024 to 2034` : ''}. Typical entry education is ${data.education.toLowerCase()}.`
+        : 'The Bureau of Labor Statistics does not publish a separate occupational code for this role, so we do not attach a federal wage figure to it. We say that rather than borrowing a number from an adjacent occupation.'}
+      {' '}Compare that with ${bls.allOccupationsMedian.toLocaleString()} across all occupations. Core skills employers
+      ask for include {career.skills.slice(0, 4).join(', ')}. Relevant credentials:
+      {' '}{linkedCerts.length ? linkedCerts.map(c => c.short).join(', ') : 'see the credentials section below'}. In our
+      own {outcomesSurvey.name} of {outcomesSurvey.sampleLabel},
+      {' '}{outcomesSurvey.headline.employedWithinSixMonths} percent were employed within six months and
+      {' '}{outcomesSurvey.headline.supervisedPracticeCritical} percent called supervised practice critical to their
+      career. Reviewed by {author.name}, {author.role}. Last updated {site.reviewedLabel}.
+    </AiSummary>
+
+    <div class="hot-take">
+      <strong>Our take</strong>
+      <p>{career.hotTake}</p>
+    </div>
+
+    <h2>Is this career a fit for you?</h2>
+    <p>{career.fit}</p>
+
+    <h2>What the work is actually like</h2>
+    <p>{career.reality}</p>
+
+    <h2>What you will be paid</h2>
+    {data ? (
+      <>
+        <p>
+          The Bureau of Labor Statistics reported a May 2024 median annual wage of ${data.median.toLocaleString()} for
+          {' '}{data.label.toLowerCase()}, occupational code {data.soc}, against
+          {' '}${bls.allOccupationsMedian.toLocaleString()} across all occupations.
+          {data.p10 && data.p90 && ` The lowest 10 percent earned under $${data.p10.toLocaleString()} and the highest 10 percent above $${data.p90.toLocaleString()}, a spread wide enough that the median describes relatively few people.`}
+        </p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Federal measure</th><th>Figure</th></tr></thead>
+            <tbody>
+              <tr><td>Median annual wage, May 2024</td><td>${data.median.toLocaleString()}</td></tr>
+              {data.hourly && <tr><td>Median hourly wage</td><td>${data.hourly}</td></tr>}
+              {data.p10 && <tr><td>Lowest 10 percent</td><td>Under ${data.p10.toLocaleString()}</td></tr>}
+              {data.p90 && <tr><td>Highest 10 percent</td><td>Above ${data.p90.toLocaleString()}</td></tr>}
+              {data.employment && <tr><td>Jobs held, 2024</td><td>{data.employment.toLocaleString()}</td></tr>}
+              {data.projectedEmployment && <tr><td>Projected jobs, 2034</td><td>{data.projectedEmployment.toLocaleString()}</td></tr>}
+              <tr><td>Projected growth, 2024 to 2034</td><td>{data.growthPct !== null && data.growthPct !== undefined ? `${data.growthPct}%, ${data.growthLabel.toLowerCase()}` : data.growthLabel}</td></tr>
+              {data.openingsPerYear && <tr><td>Projected annual openings</td><td>{data.openingsPerYear.toLocaleString()}</td></tr>}
+              <tr><td>Typical entry education</td><td>{data.education}</td></tr>
+              {data.training && <tr><td>Typical entry training</td><td>{data.training}</td></tr>}
+            </tbody>
+          </table>
+        </div>
+        {data.industries && data.industries.length > 0 && (
+          <>
+            <h3>Median wage by industry</h3>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Industry</th><th>Median annual wage</th></tr></thead>
+                <tbody>
+                  {data.industries.map(([industry, wage]: [string, number]) => (
+                    <tr><td>{industry}</td><td>${wage.toLocaleString()}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+        <p style="color:var(--muted);font-size:14px">
+          Source: U.S. Bureau of Labor Statistics,
+          {' '}<a href={data.url} target="_blank" rel="noopener noreferrer">{data.label}</a>. Wages are May 2024
+          national medians; projections cover 2024 to 2034.
+          {data.sourceNote && ` ${data.sourceNote}`}
+          {data.vintage && ` Vintage flag: this figure is from the ${data.vintage} release rather than May 2024.`}
+        </p>
+      </>
+    ) : (
+      <p>
+        There is no separate Bureau of Labor Statistics occupational code for this role, which means there is no
+        authoritative national median wage for it. We will not borrow a figure from an adjacent occupation and present
+        it as though it were this one. The compensation table below describes the ranges we can characterise honestly
+        from adjacent occupational data and market observation, and it is labeled as such.
+      </p>
+    )}
+    {career.blsNote && <p>{career.blsNote}</p>}
+
+    <h3>Compensation in practice</h3>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>{career.compensation.head[0]}</th><th>{career.compensation.head[1]}</th><th>{career.compensation.head[2]}</th></tr>
+        </thead>
+        <tbody>
+          {career.compensation.rows.map(([a, b, c]) => (
+            <tr><td>{a}</td><td>{b}</td><td>{c}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>The education pathway</h2>
+    <p>
+      This is the sequence, in order, with the decisions that are hard to reverse marked as early as we can mark them.
+    </p>
+    {career.pathway.map((stage, index) => (
+      <>
+        <h3>{index + 1}. {stage.stage}</h3>
+        <p>{stage.detail}</p>
+      </>
+    ))}
+
+    <h2>Skills employers actually screen for</h2>
+    <ul>{career.skills.map(skill => <li>{skill}</li>)}</ul>
+    <p>
+      For context, our own {outcomesSurvey.name} asked {outcomesSurvey.sample.toLocaleString()} graduates which skills
+      employers requested most. Medical nutrition therapy led at {outcomesSurvey.skillsInDemand[0][1]} percent, nutrition
+      assessment at {outcomesSurvey.skillsInDemand[1][1]} percent, and counseling and communication at
+      {' '}{outcomesSurvey.skillsInDemand[2][1]} percent. Communication outranking every technical specialisation except
+      assessment is the finding students most consistently ignore.
+    </p>
+
+    {linkedCerts.length > 0 && (
+      <>
+        <h2>Credentials that matter for this role</h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Credential</th><th>Issuer</th><th>Who it is for</th></tr></thead>
+            <tbody>
+              {linkedCerts.map(cert => (
+                <tr>
+                  <td><a href={`/certifications/${cert.slug}/`}>{cert.short}</a></td>
+                  <td>{cert.issuer}</td>
+                  <td>{cert.for}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Credentialing rules, fees, and eligibility requirements change. Confirm every requirement with the issuing
+          body before you spend money on preparation, and confirm licensure separately with your state board, because
+          the credential and the licence are two different things.
+        </p>
+      </>
+    )}
+
+    <Prose sections={career.sections} />
+
+    <h2>What this means for you</h2>
+    <p>
+      If this is the career you want, the next moves are concrete. Confirm which credential the job postings in your
+      target region actually require, then pick a program that delivers it, then start building the supervised or
+      practical experience that employers interview about. In our survey,
+      {' '}{outcomesSurvey.headline.supervisedPracticeCritical} percent of graduates called supervised practice critical
+      or very important to their career, which was the strongest consensus in the entire study.
+    </p>
+    <p>
+      Then check the market rather than trusting anyone including us. Read twenty live job postings for this role in the
+      metropolitan area you intend to live in. Note the credential they require, the years of experience, and the salary
+      band where it is published. That exercise takes an afternoon and it is more informative than any career guide,
+      including this one.
+    </p>
+    <p>
+      Related reading:
+      {' '}<a class="text-link" href="/rankings/">program rankings by level and specialty</a>,
+      {' '}<a class="text-link" href="/certifications/">all credentials compared</a>,
+      {' '}<a class="text-link" href="/resources/nutrition-salary-guide-2026/">the full salary guide</a>, and
+      {' '}<a class="text-link" href="/states/">programs by state</a>.
+    </p>
+
+    <Faq items={career.faq} />
+
+    <div class="notice">
+      <Byline author={author} prefix="Reviewed by" />
+      <strong>How to read this page:</strong> federal wage and projection figures come from the Bureau of Labor
+      Statistics releases cited above and are national medians, not offers. Figures attributed to the
+      {' '}{outcomesSurvey.shortName} are ours, drawn from a self-selected sample of
+      {' '}{outcomesSurvey.sample.toLocaleString()} graduates. Compensation ranges described as market observation are
+      editorial judgement and labeled that way. Credentialing and licensure requirements change, so confirm them with
+      the issuing body and your state board. Nothing here is medical or dietary advice. Last reviewed
+      {' '}{site.reviewedLabel}. This guide runs roughly {wordCount.toLocaleString()} words.
+    </div>
+  </article>
+</BaseLayout>

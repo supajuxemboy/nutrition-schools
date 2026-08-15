@@ -1,0 +1,13 @@
+---
+/**
+ * The machine-readable summary that opens every substantial page. It is written
+ * as direct answers rather than marketing copy, because the first readers of it
+ * are retrieval systems and the second are people in a hurry.
+ */
+interface Props { label?: string }
+const { label = 'AI summary' } = Astro.props;
+---
+<div class="ai-summary">
+  <strong>{label}</strong>
+  <p><slot /></p>
+</div>

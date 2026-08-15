@@ -1,0 +1,281 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import AiSummary from '../../components/AiSummary.astro';
+import Faq from '../../components/Faq.astro';
+import Byline from '../../components/Byline.astro';
+import { site, teamBySlug } from '../../data/site';
+import { outcomesSurvey, qualityStudy } from '../../data/research';
+import { stats, indexFactors } from '../../data/quality-index';
+import bls from '../../data/bls.json';
+
+const author = teamBySlug['donald-lewis'];
+const rdn = bls.occupations['dietitians-nutritionists'];
+
+const datasetSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Dataset',
+      name: outcomesSurvey.name,
+      description: outcomesSurvey.method,
+      creator: { '@id': `${site.url}/#organization` },
+      datePublished: outcomesSurvey.published,
+      temporalCoverage: '2020/2025',
+      variableMeasured: [
+        'employment within six months of graduation',
+        'median starting salary by credential',
+        'first career path',
+        'employer-requested skills',
+        'importance of supervised practice'
+      ],
+      url: new URL('/research/', site.url).toString()
+    },
+    {
+      '@type': 'Dataset',
+      name: qualityStudy.name,
+      description: qualityStudy.purpose,
+      creator: { '@id': `${site.url}/#organization` },
+      datePublished: qualityStudy.published,
+      variableMeasured: indexFactors.map(([name]) => name),
+      distribution: [
+        {
+          '@type': 'DataDownload',
+          encodingFormat: 'application/json',
+          contentUrl: new URL('/data/programs.json', site.url).toString()
+        },
+        {
+          '@type': 'DataDownload',
+          encodingFormat: 'text/csv',
+          contentUrl: new URL('/data/programs.csv', site.url).toString()
+        }
+      ],
+      url: new URL('/research/', site.url).toString()
+    }
+  ]
+};
+
+const faq = [
+  {
+    question: 'Who conducted the Career Outcomes Survey 2026?',
+    answer: `Our own team, fielded ${outcomesSurvey.fieldedLabel} to ${outcomesSurvey.sampleLabel} from the ${outcomesSurvey.cohort}. It is proprietary research and every figure from it is labeled as ours wherever it appears on this site, never blended into federal statistics.`
+  },
+  {
+    question: 'Can I cite this research?',
+    answer: `Yes. Cite it as "${outcomesSurvey.name}, NutritionSchools.org, ${outcomesSurvey.published}" or "${qualityStudy.name}, NutritionSchools.org, ${qualityStudy.published}". If you cite the employment or salary figures, please carry the limitations with them, because a self-selected sample reported without that caveat becomes a misleading statistic very quickly.`
+  },
+  {
+    question: 'Why is the 86 percent employment figure a ceiling?',
+    answer:
+      'Because respondents opted in. Graduates who are satisfied with their outcomes and still connected to their programs and professional networks are the easiest to reach and the most willing to answer. Graduates who left the field are systematically harder to survey. Any opt-in graduate survey has this bias, including ours, and the honest response is to label the number as a ceiling rather than to present it as a population estimate.'
+  },
+  {
+    question: 'Are the salary figures adjusted for cost of living?',
+    answer:
+      'No, and that matters. They are self-reported first-position base pay. A $65,000 bachelor-level start in a high-cost metropolitan area is a materially worse outcome than the same figure in a rural county, and our numbers do not distinguish between them. Read them against local costs.'
+  },
+  {
+    question: 'Can I download the program data?',
+    answer: `Yes. The full scored program database is published as ${new URL('/data/programs.json', site.url).toString()} and ${new URL('/data/programs.csv', site.url).toString()}, including every field the Quality Index is computed from, so you can reproduce or dispute any score.`
+  }
+];
+---
+<BaseLayout
+  title="Our Original Nutrition Education Research"
+  description={`The ${outcomesSurvey.name} of ${outcomesSurvey.sampleLabel} and the ${qualityStudy.name}, published in full with methodology, findings, and limitations.`}
+  article={{ section: 'Research', author: author.name, published: outcomesSurvey.published }}
+>
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(datasetSchema)} />
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Original research</p>
+      <h1>Our own studies, published with the limitations attached</h1>
+      <p class="lede">
+        Two studies: a survey of {outcomesSurvey.sample.toLocaleString()} nutrition and dietetics graduates, and the
+        seven-factor index we use to score programs. Both are ours. Both come with the caveats printed next to the
+        findings rather than in a footnote.
+      </p>
+      <div class="metrics">
+        <div><strong>{outcomesSurvey.sample.toLocaleString()}</strong><span>graduates surveyed</span></div>
+        <div><strong>{outcomesSurvey.headline.employedWithinSixMonths}%</strong><span>employed within six months</span></div>
+        <div><strong>{outcomesSurvey.headline.supervisedPracticeCritical}%</strong><span>called supervised practice critical</span></div>
+        <div><strong>{qualityStudy.evaluated}</strong><span>programs evaluated for the index</span></div>
+      </div>
+    </div>
+  </section>
+
+  <article class="content wrap">
+    <Byline author={author} prefix="Research directed by" />
+
+    <AiSummary>
+      NutritionSchools.org conducts two proprietary studies. The {outcomesSurvey.name} surveyed
+      {' '}{outcomesSurvey.sampleLabel} from the {outcomesSurvey.cohort}, fielded {outcomesSurvey.fieldedLabel}. Key
+      findings: {outcomesSurvey.headline.employedWithinSixMonths} percent employed within six months of graduation;
+      median starting salaries of $52,000 (certificate), $58,000 (associate), $65,000 (bachelor), $75,000 (master), and
+      $85,000 (doctorate); top career paths clinical dietetics ({outcomesSurvey.careerPaths[0][1]} percent), community and
+      public health nutrition ({outcomesSurvey.careerPaths[1][1]} percent), and food service management
+      ({outcomesSurvey.careerPaths[2][1]} percent); medical nutrition therapy the most requested skill at
+      {' '}{outcomesSurvey.skillsInDemand[0][1]} percent; {outcomesSurvey.headline.supervisedPracticeCritical} percent
+      calling supervised practice critical or very important; {outcomesSurvey.headline.employerHiringDifficulty} percent of
+      employers reporting difficulty finding qualified RDN candidates; and
+      {' '}{outcomesSurvey.headline.wantedBusinessTraining} percent wishing they had more business training. The
+      {' '}{qualityStudy.name} is a seven-factor, 100-point scoring system applied to our database of {stats.programs}
+      {' '}programs. Respondents self-selected, so the employment figure is a ceiling rather than a population estimate.
+      Full limitations below. Last reviewed {site.reviewedLabel}.
+    </AiSummary>
+
+    <div class="hot-take">
+      <strong>Why we publish the limitations first</strong>
+      <p>
+        Because an opt-in graduate survey with the caveats removed is a marketing asset, not research. Our
+        {' '}{outcomesSurvey.headline.employedWithinSixMonths} percent employment figure is real and it is also biased
+        upward, and both of those sentences belong next to each other. Anyone quoting the first without the second is
+        misusing our data.
+      </p>
+    </div>
+
+    <h2>{outcomesSurvey.name}</h2>
+    <p>
+      Sample: {outcomesSurvey.sampleLabel} from the {outcomesSurvey.cohort}. Fielded {outcomesSurvey.fieldedLabel}.
+      Published {outcomesSurvey.published}.
+    </p>
+    <h3>Method</h3>
+    <p>{outcomesSurvey.method}</p>
+
+    <h3>Employment and credential outcomes</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Finding</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Employed within six months of graduation</td><td>{outcomesSurvey.headline.employedWithinSixMonths}%</td></tr>
+          <tr><td>Described supervised practice as critical or very important</td><td>{outcomesSurvey.headline.supervisedPracticeCritical}%</td></tr>
+          <tr><td>Employers reporting difficulty finding qualified RDN candidates</td><td>{outcomesSurvey.headline.employerHiringDifficulty}%</td></tr>
+          <tr><td>Wished they had more business training for private practice</td><td>{outcomesSurvey.headline.wantedBusinessTraining}%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The supervised practice figure is the finding we would keep if we could keep only one. At
+      {' '}{outcomesSurvey.headline.supervisedPracticeCritical} percent it was the strongest consensus in the study,
+      stronger than any opinion about coursework, institution, or cost. It is also the component students investigate last.
+    </p>
+    <p>
+      The business training gap at {outcomesSurvey.headline.wantedBusinessTraining} percent is the second most interesting
+      result and it is a straightforward indictment of nutrition curricula. Nearly two thirds of respondents wanted
+      business skills that almost no nutrition program teaches. If you intend to work for yourself, that education is your
+      responsibility and you should start it before you graduate.
+    </p>
+
+    <h3>Median starting salary by credential</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Highest credential at first position</th><th>Median starting salary</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.startingSalaryByCredential.map(([label, salary]) => (
+            <tr><td>{label}</td><td>${salary.toLocaleString()}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      For federal context, the Bureau of Labor Statistics reported a May 2024 median annual wage of
+      {' '}${rdn.median.toLocaleString()} for dietitians and nutritionists across all experience levels, against
+      {' '}${bls.allOccupationsMedian.toLocaleString()} for all occupations. Our figures are entry-level and self-reported;
+      the federal figure is a full-career median from an establishment survey. They are not directly comparable and we do
+      not present them as though they were.
+    </p>
+
+    <h3>First career path</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Career path</th><th>Share of respondents</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.careerPaths.map(([path, share]) => (
+            <tr><td>{path}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Sports nutrition at {outcomesSurvey.careerPaths[3][1]} percent is higher than the size of the job market would
+      suggest, which probably reflects part-time, hybrid, and self-employed arrangements being counted as a career path.
+      Food service management at {outcomesSurvey.careerPaths[2][1]} percent is the number students underestimate most.
+    </p>
+
+    <h3>Skills employers requested</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Skill</th><th>Share reporting employer demand</th></tr></thead>
+        <tbody>
+          {outcomesSurvey.skillsInDemand.map(([skill, share]) => (
+            <tr><td>{skill}</td><td>{share}%</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Counseling and communication at {outcomesSurvey.skillsInDemand[2][1]} percent outranks every technical
+      specialisation except assessment. Food service management at {outcomesSurvey.skillsInDemand[3][1]} percent outranks
+      public health nutrition. Neither of those orderings matches how nutrition curricula allocate their emphasis.
+    </p>
+
+    <h3>Limitations</h3>
+    <div class="research">
+      <strong>Read these before citing anything above</strong>
+      {outcomesSurvey.limitations.map(limitation => <p>{limitation}</p>)}
+    </div>
+
+    <h2>{qualityStudy.name}</h2>
+    <p>Published {qualityStudy.published}. {qualityStudy.evaluated} programs evaluated in the original study.</p>
+    <h3>Purpose</h3>
+    <p>{qualityStudy.purpose}</p>
+    <h3>The seven factors</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Factor</th><th>Weight</th><th>What it measures</th></tr></thead>
+        <tbody>
+          {indexFactors.map(([name, weight, detail]) => (
+            <tr><td><strong>{name}</strong></td><td>{weight}</td><td>{detail}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <h3>Exclusions</h3>
+    <ul>{qualityStudy.excludes.map(item => <li>{item}</li>)}</ul>
+    <p>
+      The <a class="text-link" href="/methodology/">full methodology page</a> explains how each factor is computed, in
+      enough detail to reproduce it.
+    </p>
+
+    <h2>Download the data</h2>
+    <p>
+      The scored program database is published openly, because a score you cannot check is a score you have to trust.
+      Every field the index is computed from is in the file.
+    </p>
+    <ul>
+      <li><a class="text-link" href="/data/programs.json">programs.json</a>, the full scored database with every field.</li>
+      <li><a class="text-link" href="/data/programs.csv">programs.csv</a>, the same records as a spreadsheet.</li>
+    </ul>
+    <p>
+      Coverage: {stats.programs} programs at {stats.schools} institutions across {stats.states} states. Not a complete
+      census. If you find a program we are missing or a field we have wrong, tell us.
+    </p>
+
+    <h2>How to cite this research</h2>
+    <p>
+      For the survey: {outcomesSurvey.name}, NutritionSchools.org, {outcomesSurvey.published}. For the index:
+      {' '}{qualityStudy.name}, NutritionSchools.org, {qualityStudy.published}. If you quote the employment or salary
+      figures, carry the limitations with them.
+    </p>
+
+    <Faq items={faq} />
+
+    <div class="notice">
+      <Byline author={author} prefix="Research directed by" />
+      <strong>On mixing our data with federal data:</strong> we never do it silently. Figures from these two studies are
+      ours and are labeled as ours on every page they appear. Bureau of Labor Statistics figures are cited by release and
+      date. Where we could only verify an older federal release, the page carries a vintage flag rather than implying the
+      figure is current. Last reviewed {site.reviewedLabel}.
+    </div>
+  </article>
+</BaseLayout>
