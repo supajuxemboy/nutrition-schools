@@ -1,0 +1,9 @@
+# Cloudflare Pages redirects. Astro config redirects do not always apply on this adapter.
+/certifications/chwc /certifications/csw/ 301
+/certifications/chwc/ /certifications/csw/ 301
+/blog /resources/ 301
+/blog/ /resources/ 301
+/rankings/best-nutrition-programs /rankings/ 301
+/rankings/best-nutrition-programs/ /rankings/ 301
+/rankings/best-acend-accredited-programs /rankings/best-acend-accredited-nutrition-programs/ 301
+/rankings/best-acend-accredited-programs/ /rankings/best-acend-accredited-nutrition-programs/ 301

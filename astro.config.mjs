@@ -10,7 +10,7 @@ export default defineConfig({
   trailingSlash: 'always',
   redirects: {
     // The wellness coaching credential is filed under its accurate abbreviation.
-    '/certifications/csw/': '/certifications/chwc/',
+    '/certifications/chwc/': '/certifications/csw/',
     '/blog/': '/resources/',
     '/rankings/best-nutrition-programs/': '/rankings/',
     '/rankings/best-acend-accredited-programs/': '/rankings/best-acend-accredited-nutrition-programs/'

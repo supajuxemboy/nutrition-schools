@@ -658,7 +658,34 @@ export const modifiers = [
     intro:
       'Online degree programs leading to nutritionist and nutrition professional roles, across bachelor and graduate levels.',
     thesis:
-      'The word nutritionist is the most abused term in this field. In some states anyone may use it. In others it is protected and requires a licence. That variation is why an online nutritionist degree can be either a serious credential or a certificate of participation, and the program page will rarely tell you which.'
+      'The word nutritionist is the most abused term in this field. In some states anyone may use it. In others it is protected and requires a licence. That variation is why an online nutritionist degree can be either a serious credential or a certificate of participation, and the program page will rarely tell you which.',
+    questions: [
+      {
+        heading: 'Can you become a nutritionist with an online degree?',
+        answer:
+          'Yes, in the states that do not protect the title, and often yes in the states that do, provided the degree meets that board\'s education rules. The degree is not the hard part. The hard part is knowing what the title legally permits where you intend to work. Check your state board before you enroll, not after you graduate.'
+      },
+      {
+        heading: 'Is an online nutritionist degree the same as an online dietetics degree?',
+        answer:
+          'No. An online dietetics degree that is ACEND accredited can lead to the RDN credential. An online nutritionist degree often cannot. Marketing copy blurs this on purpose. If medical nutrition therapy is the job you want, you need the accredited dietetics pathway, not a program that uses the word nutritionist as a selling point.'
+      },
+      {
+        heading: 'Will employers respect an online nutritionist degree?',
+        answer:
+          'Employers screen for what you are allowed to do. In clinical settings they screen for the RDN. In wellness, food industry, and some public health roles they screen for a relevant degree plus experience. Delivery format is rarely the filter. Accreditation and scope of practice are. An unaccredited online nutritionist certificate is a weak qualification in every setting that pays.'
+      },
+      {
+        heading: 'What should you verify before enrolling?',
+        answer:
+          'Four things, in writing: whether the specific program is ACEND accredited, what title you will be legally allowed to use in your state after graduating, who arranges any required practice hours, and the total cost including fees. If a recruiter cannot answer the first two, stop the conversation.'
+      },
+      {
+        heading: 'When is an online nutritionist program the right choice?',
+        answer:
+          'When you already know you are not pursuing the RDN, you have checked your state\'s title rules, and you need a flexible schedule. Community nutrition, corporate wellness, food industry, and education roles can be built this way. Clinical practice cannot. Do not buy a nutritionist degree as a cheaper substitute for dietetics. It is a different destination, not a discount ticket.'
+      }
+    ]
   },
   {
     slug: 'most-affordable-nutrition-programs',

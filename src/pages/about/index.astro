@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import AiSummary from '../../components/AiSummary.astro';
 import Faq from '../../components/Faq.astro';
+import Byline from '../../components/Byline.astro';
 import { site, team } from '../../data/site';
 import { stats } from '../../data/quality-index';
 import { outcomesSurvey, qualityStudy } from '../../data/research';
@@ -135,6 +136,7 @@ const faq = [
   </section>
 
   <article class="content wrap">
+    <Byline author={team[0]} prefix="Edited by" />
     <h2>Our mission</h2>
     <p>
       To make the actual mechanics of a nutrition career legible before someone commits years and money to it. That means

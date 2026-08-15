@@ -1245,7 +1245,7 @@ export const certifications: Certification[] = [
     ]
   },
   {
-    slug: "chwc",
+    slug: "csw",
     title: "Health and Wellness Coaching Certification",
     short: "NBC-HWC",
     issuer: "National Board for Health and Wellness Coaching",
