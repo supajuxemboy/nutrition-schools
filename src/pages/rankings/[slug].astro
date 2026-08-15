@@ -7,11 +7,10 @@ import Byline from '../../components/Byline.astro';
 import { levels, specialties, modifiers, site, teamBySlug } from '../../data/site';
 import {
   allPrograms, byLevel, byTag, onlinePrograms, affordablePrograms, practicePrograms,
-  accreditedPrograms, score, topByInstitution, stats, indexFactors, levelLabel, tagLabel, acendTypes,
+  accreditedPrograms, score, topByInstitution, stats, levelLabel, tagLabel,
   type ProgramRecord, type ScoredProgram
 } from '../../data/quality-index';
-import { qualityStudy, outcomesSurvey } from '../../data/research';
-import bls from '../../data/bls.json';
+import { copyFor } from '../../data/ranking-copy';
 
 type Ranking = Record<string, any>;
 
@@ -27,7 +26,6 @@ export function getStaticPaths() {
 }
 
 const { ranking, kind } = Astro.props as { ranking: Ranking; kind: string };
-const rdn = bls.occupations['dietitians-nutritionists'];
 
 /** Resolve the program set for this ranking from the shared database. */
 function resolve(r: Ranking): ProgramRecord[] {
@@ -82,6 +80,7 @@ const acendMix = Object.entries(
   }, {})
 ).sort((a, b) => b[1] - a[1]);
 
+const copy = copyFor(ranking.slug);
 const author = teamBySlug[ranking.tag === 'public-health' ? 'matthew-obrien' : ranking.match === 'doctorate' || ranking.tag === 'nutritional-science' ? 'donald-lewis' : 'rachel-weng'];
 
 const title = ranking.seoTitle ?? ranking.title;
@@ -129,18 +128,14 @@ const itemList = {
   <article class="content wrap">
     <Byline author={author} />
     <AiSummary>
-      {ranking.title}: our database holds {pool.length} matching programs at {schoolsCovered} institutions across
-      {statesCovered} states, each linked to its official program page. {onlineCount} document an online option and
-      {acendCount} sit at institutions holding an ACEND accredited program. {medianTuition
-        ? `Median published tuition across the programs that publish a figure is $${medianTuition.toLocaleString()} a year.`
-        : 'Published tuition is available for only part of this category, so compare net cost with each financial aid office.'}
-      {' '}Scores come from the {qualityStudy.name}, a seven-factor index of 100 points covering curriculum rigor (18),
-      supervised practice (17), faculty credentials (15), program accreditation (15), clinical and community
-      partnerships (15), career outcomes (10), and cost value (10). Federal context: the Bureau of Labor Statistics
-      reported a May 2024 median wage of ${rdn.median.toLocaleString()} for dietitians and nutritionists with 6 percent
-      projected growth to 2034. Our own {outcomesSurvey.shortName} of {outcomesSurvey.sampleLabel} found
-      {' '}{outcomesSurvey.headline.employedWithinSixMonths} percent employed within six months. No institution pays
-      for placement here. Last reviewed {site.reviewedLabel}.
+      {ranking.title}: {pool.length} matching programs at {schoolsCovered} institutions across {statesCovered} states,
+      each linked to its official program page. {onlineCount} document an online option and {acendCount} sit at
+      institutions holding an ACEND accredited program.
+      {medianTuition
+        ? ` Median published tuition among programs that publish a figure is $${medianTuition.toLocaleString()} a year.`
+        : ' Published tuition is sparse in this category, so compare net cost with each financial aid office.'}
+      {' '}{copy.scoring[0]} {practiceCount} of {pool.length} programs document supervised practice.
+      {' '}{copy.meaning[0]} Last reviewed {site.reviewedLabel}.
     </AiSummary>
 
     <div class="hot-take">
@@ -149,15 +144,11 @@ const itemList = {
     </div>
 
     <h2>What is in this ranking</h2>
+    <p>{ranking.intro}</p>
+    {copy.listFraming.map(paragraph => <p>{paragraph}</p>)}
     <p>
-      {ranking.intro} Every entry below links to the institution's own program page, because that page is the
-      authoritative source for curriculum, cost, and accreditation, and our record is a pointer to it rather than a
-      replacement for it.
-    </p>
-    <p>
-      We show one entry per institution in the ranked list, keeping that institution's strongest scoring record, so a
-      university running four related programs does not occupy four positions. The full matching set appears further
-      down the page.
+      Every card links to the institution's own program page, which is the authority on curriculum, cost, and
+      accreditation. Our record is a pointer, not a replacement.
     </p>
     {pool.length < 10 && (
       <p>
@@ -196,26 +187,12 @@ const itemList = {
       </table>
     </div>
 
-    <h2>How we scored these programs</h2>
+    <h2>{copy.scoringHeading}</h2>
+    {copy.scoring.map(paragraph => <p>{paragraph}</p>)}
     <p>
-      With the {qualityStudy.name}. Seven factors, 100 points, every one of them computed from information an
-      institution or the accreditor publishes. That constraint is deliberate: it means a score you disagree with can be
-      traced to a specific factor rather than to our taste.
-    </p>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Factor</th><th>Weight</th><th>What it measures</th></tr></thead>
-        <tbody>
-          {indexFactors.map(([name, weight, detail]) => (
-            <tr><td><strong>{name}</strong></td><td>{weight}</td><td>{detail}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p>
-      Scores cluster. In a database built from published attributes, the difference between a program at 84 and one at
-      81 is usually one documentation decision by a marketing office, not a difference in education. Treat the top
-      group as a shortlist of comparable options and choose within it on cost, location, and supervised practice.
+      The seven-factor arithmetic lives on the <a class="text-link" href="/methodology/">methodology page</a>, not
+      reprinted here. Scores still cluster. A three-point gap is usually one documentation decision, not a difference
+      in education.
     </p>
   </article>
 
@@ -223,10 +200,9 @@ const itemList = {
     <div class="wrap">
       <h2>{ranking.title}: the ranked list</h2>
       <p class="lede">
-        One entry per institution, ordered by
-        {ranking.slug === 'most-affordable-nutrition-programs' ? ' published tuition, then by Quality Index score' : ' Quality Index score'}.
-        Every card links to the official program page. ACEND accreditation is flagged on every card because it is the
-        gate to the RDN credential.
+        {ranked.length} institutions in the ranked cards, ordered by
+        {ranking.slug === 'most-affordable-nutrition-programs' ? ' published tuition, then score' : ' Quality Index score'}.
+        {rest.length > 0 ? ` ${rest.length} additional matching programs are in the table below.` : ''}
       </p>
       <ul class="chip-legend">
         <li><span class="chip chip-acend">ACEND</span> program at an institution holding ACEND accreditation</li>
@@ -259,98 +235,53 @@ const itemList = {
   </section>
 
   <article class="content wrap">
-    <h2>Reading the ACEND program codes</h2>
-    <p>
-      These codes decide whether a program moves you toward the RDN credential, and they are the most consequential
-      four letters in this field. Learn them before you compare anything else.
-    </p>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Code</th><th>What it means</th></tr></thead>
-        <tbody>
-          {Object.entries(acendTypes).map(([code, meaning]) => (
-            <tr><td><strong>{code}</strong></td><td>{meaning}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p>
-      The distinction that catches people is DPD against CP or GP. A Didactic Program gives you accredited coursework
-      and nothing else, which means you still need to win a separate competitive internship placement afterward. A
-      Coordinated or Graduate Program carries both. If you are choosing between two otherwise equal programs and one is
-      a GP, choose the GP.
-    </p>
+    <h2>{copy.acendHeading}</h2>
+    {copy.acend.map(paragraph => <p>{paragraph}</p>)}
+    {acendMix.length > 0 && (
+      <p>
+        ACEND types recorded in this category: {acendMix.map(([code, n]) => `${code} (${n})`).join(', ')}. Verify each
+        program on the ACEND directory. Our chips are a pointer, not the accreditor.
+      </p>
+    )}
 
-    <h2>How to compare two programs that score the same</h2>
-    <p>
-      This happens constantly, and it is where the real decision lives. Two programs three points apart are, for
-      practical purposes, equivalent on everything a national index can see. So compare them on the things it cannot.
-    </p>
+    <h2>{copy.compareHeading}</h2>
+    <p>{copy.compareIntro}</p>
     <ul>
-      <li><strong>Net cost, not sticker price.</strong> Request an estimate from each financial aid office for your own circumstances. Differences of twenty or thirty thousand dollars across an equivalent credential are routine, and debt is the strongest predictor of whether this career feels sustainable.</li>
-      <li><strong>Placement geography.</strong> Ask each program where its supervised practice sites are. A program whose partners sit in the metropolitan area you intend to work in is worth more to you than one whose partners are four states away, because those relationships become your first professional network.</li>
-      <li><strong>Who owns placement failure.</strong> Ask what happens when a site withdraws mid-rotation. Programs with real infrastructure have an answer. Programs without one will tell you it rarely happens, which is not an answer.</li>
-      <li><strong>Cohort completion.</strong> Ask what share of last year cohort finished on schedule. Programs that track this will say. Programs that do not track it are telling you about their internal reporting.</li>
-      <li><strong>Faculty who practise.</strong> Ask how many faculty hold a current credential and see patients or run programs. Teaching medical nutrition therapy from a textbook and teaching it from a caseload are different experiences for the student.</li>
-      <li><strong>Schedule reality.</strong> If you work, ask whether required courses and rotations are actually completable alongside employment, and ask a current student rather than an admissions officer.</li>
+      {copy.compareItems.map(([label, detail]) => (
+        <li><strong>{label}.</strong> {detail}</li>
+      ))}
     </ul>
-    <p>
-      Six questions, two phone calls each. That is a day of work against a decision worth years, and it will separate two
-      programs our index cannot separate.
-    </p>
+    <p>{copy.compareClose}</p>
 
-    <h2>What the index cannot tell you about these programs</h2>
-    <ul>{qualityStudy.excludes.map(item => <li>{item}</li>)}</ul>
-    <p>
-      Those exclusions are not modesty, they are the limits of national published data. Which is why the four checks
-      below matter more than any position in the list above.
-    </p>
+    <h2>{copy.limitsHeading}</h2>
+    <ul>{copy.limits.map(item => <li>{item}</li>)}</ul>
 
-    <h2>Five questions to ask before you enroll</h2>
+    <h2>{copy.enrollHeading}</h2>
     <ul>
-      <li><strong>Is this specific program ACEND accredited, and is the status full accreditation or candidacy?</strong> Verify with ACEND rather than the program page, because accreditation is program-specific and program pages lag.</li>
-      <li><strong>Who arranges supervised practice, and at which named sites?</strong> The three models are the institution places you, the institution helps you place yourself, and you are on your own. Ask which, in writing.</li>
-      <li><strong>What is my net cost after aid?</strong> Only the financial aid office can produce this figure and it frequently differs from published tuition by tens of thousands of dollars.</li>
-      <li><strong>What does the required course list contain?</strong> Biochemistry, physiology, statistics, nutrition assessment, and medical nutrition therapy. If those are electives, this is a wellness degree with a nutrition name.</li>
-      <li><strong>What proportion of last year cohort completed on schedule?</strong> Programs that track this will tell you. Programs that do not track it are telling you something else.</li>
+      {copy.enrollItems.map(([question, detail]) => (
+        <li><strong>{question}</strong> {detail}</li>
+      ))}
     </ul>
 
     <h2>What this means for you</h2>
-    <p>
-      If you want to become an RDN, discard every program that is not ACEND accredited before you compare anything else.
-      Then decide on supervised practice: who arranges it, at which named sites, and what happens when a placement falls
-      through. Then get a net cost figure from the financial aid office. Ranking position is a tiebreaker among programs
-      that already pass those three tests. It is not a reason to ignore them.
-    </p>
-    <p>
-      If you do not want the RDN, say that out loud before you enroll. Plenty of nutrition careers do not require it.
-      What they do require is honesty about scope: you will not be providing medical nutrition therapy in a hospital, and
-      a program that implies otherwise is not preparing you, it is selling you.
-    </p>
+    {copy.meaning.map(paragraph => <p>{paragraph}</p>)}
 
-    <h2>What these programs lead to</h2>
+    <h2>{copy.outcomesHeading}</h2>
+    {copy.outcomes.map(paragraph => <p>{paragraph}</p>)}
     <p>
-      The Bureau of Labor Statistics reported a May 2024 median annual wage of ${rdn.median.toLocaleString()} for
-      dietitians and nutritionists across about {rdn.employment.toLocaleString()} jobs, with roughly
-      {' '}{rdn.openingsPerYear.toLocaleString()} openings a year and 6 percent projected growth through 2034. The
-      lowest 10 percent earned under ${rdn.p10.toLocaleString()} and the highest 10 percent above
-      {' '}${rdn.p90.toLocaleString()}, which is a wider spread than most students expect inside a single occupation.
+      Survey figures are ours, from a self-selected sample, labeled as ours. Federal wages are Bureau of Labor
+      Statistics, cited by release. Limitations sit on the
+      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">Career Outcomes Survey 2026</a> page.
     </p>
     <p>
-      Our own {outcomesSurvey.name} of {outcomesSurvey.sampleLabel} found
-      {' '}{outcomesSurvey.headline.employedWithinSixMonths} percent employed within six months, with clinical dietetics
-      the largest destination at {outcomesSurvey.careerPaths[0][1]} percent. Those are our figures from a self-selected
-      sample, not a federal statistic, and we label them that way wherever they appear. See the
-      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">Career Outcomes Survey 2026</a> and the
-      {' '}<a class="text-link" href="/research/">full research report</a> for the limitations.
-    </p>
-    <p>
-      Related reading:
-      {' '}<a class="text-link" href="/careers/">career guides by occupation</a>,
-      {' '}<a class="text-link" href="/certifications/">credentials compared</a>,
-      {' '}<a class="text-link" href="/methodology/">how we score programs</a>,
-      {' '}<a class="text-link" href="/rankings/best-acend-accredited-nutrition-programs/">ACEND accredited programs</a>,
-      and <a class="text-link" href="/states/">programs by state</a>.
+      Related:
+      {copy.related.map(([href, label], index) => (
+        <>
+          {index === 0 ? ' ' : index === copy.related.length - 1 ? ', and ' : ', '}
+          <a class="text-link" href={href}>{label}</a>
+        </>
+      ))}
+      .
     </p>
 
     {faq.length > 0 && <Faq items={faq} />}

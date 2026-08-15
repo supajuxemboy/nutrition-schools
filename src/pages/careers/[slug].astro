@@ -9,6 +9,7 @@ import { certBySlug } from '../../data/certifications';
 import { site, teamBySlug } from '../../data/site';
 import { outcomesSurvey } from '../../data/research';
 import SurveySnapshot from '../../components/SurveySnapshot.astro';
+import { careerRankingLinks } from '../../data/ranking-copy';
 import bls from '../../data/bls.json';
 
 export function getStaticPaths() {
@@ -20,6 +21,7 @@ const occ = bls.occupations as Record<string, any>;
 const data = career.bls ? occ[career.bls] : null;
 const author = teamBySlug[career.author] ?? site.team[0];
 const linkedCerts = career.certifications.map(slug => certBySlug[slug]).filter(Boolean);
+const rankingLinks = careerRankingLinks[career.slug] ?? [];
 
 const wordCount = [
   career.fit, career.reality, career.hotTake,
@@ -247,11 +249,14 @@ const occupationSchema = data
     </p>
     <p>
       Related reading:
-      {' '}<a class="text-link" href="/rankings/">program rankings by level and specialty</a>,
+      {rankingLinks.map(([href, label]) => (
+        <>
+          {' '}<a class="text-link" href={href}>{label}</a>,
+        </>
+      ))}
       {' '}<a class="text-link" href="/certifications/">all credentials compared</a>,
-      {' '}<a class="text-link" href="/resources/nutrition-salary-guide-2026/">the full salary guide</a>,
-      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026</a>, and
-      {' '}<a class="text-link" href="/states/">programs by state</a>.
+      {' '}<a class="text-link" href="/resources/nutrition-salary-guide-2026/">the full salary guide</a>, and
+      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026</a>.
     </p>
 
     <Faq items={career.faq} />

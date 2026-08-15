@@ -2,6 +2,7 @@ import { levels, specialties, modifiers, stateList } from './site';
 import { careers } from './careers';
 import { certifications } from './certifications';
 import { resources } from './resources';
+import { rankingCopy } from './ranking-copy';
 
 const sectionLabel: Record<string, string> = {
   rankings: 'Rankings',
@@ -106,7 +107,11 @@ const FALLBACK: Link[] = [
 ];
 
 export function relatedLinks(pathname: string): Link[] {
-  const section = pathname.split('/').filter(Boolean)[0] ?? '';
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts[0] === 'rankings' && parts[1] && rankingCopy[parts[1]]) {
+    return rankingCopy[parts[1]].related.filter(([href]) => href !== pathname);
+  }
+  const section = parts[0] ?? '';
   const candidates = CATALOG[section] ?? FALLBACK;
   return candidates.filter(([href]) => href !== pathname && href !== `${pathname}`);
 }

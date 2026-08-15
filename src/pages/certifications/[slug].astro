@@ -7,6 +7,7 @@ import Byline from '../../components/Byline.astro';
 import { certifications } from '../../data/certifications';
 import { careers } from '../../data/careers';
 import { site, teamBySlug } from '../../data/site';
+import { certRankingLinks } from '../../data/ranking-copy';
 import { outcomesSurvey } from '../../data/research';
 import bls from '../../data/bls.json';
 
@@ -21,6 +22,7 @@ const rdn = bls.occupations['dietitians-nutritionists'];
 const relatedCareers = careers
   .filter(c => c.certifications.includes(cert.slug))
   .map(c => ({ career: c, data: c.bls ? occ[c.bls] : null }));
+const rankingLinks = certRankingLinks[cert.slug] ?? [];
 
 const wordCount = [
   cert.takeaway, cert.hotTake, cert.for,
@@ -160,11 +162,14 @@ const credentialSchema = {
     </p>
     <p>
       Related reading:
-      {' '}<a class="text-link" href="/certifications/">all credentials compared</a>,
+      {rankingLinks.map(([href, label]) => (
+        <>
+          {' '}<a class="text-link" href={href}>{label}</a>,
+        </>
+      ))}
       {' '}<a class="text-link" href="/careers/">career guides by occupation</a>,
-      {' '}<a class="text-link" href="/resources/how-to-become-a-registered-dietitian-step-by-step/">the step by step RDN pathway</a>,
-      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026</a>, and
-      {' '}<a class="text-link" href="/rankings/">accredited program rankings</a>.
+      {' '}<a class="text-link" href="/resources/how-to-become-a-registered-dietitian-step-by-step/">the step by step RDN pathway</a>, and
+      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026</a>.
     </p>
 
     <Faq items={cert.faq} />

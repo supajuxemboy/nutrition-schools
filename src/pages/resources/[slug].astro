@@ -7,6 +7,7 @@ import Byline from '../../components/Byline.astro';
 import { resources } from '../../data/resources';
 import { site, teamBySlug } from '../../data/site';
 import { outcomesSurvey } from '../../data/research';
+import { resourceRankingLinks } from '../../data/ranking-copy';
 import { stats } from '../../data/quality-index';
 
 export function getStaticPaths() {
@@ -16,6 +17,7 @@ export function getStaticPaths() {
 const { resource } = Astro.props;
 const author = teamBySlug[resource.author] ?? site.team[0];
 const others = resources.filter(r => r.slug !== resource.slug).slice(0, 3);
+const rankingLinks = resourceRankingLinks[resource.slug] ?? [];
 
 const wordCount = [
   resource.summary, resource.hotTake, resource.aiSummary,
@@ -79,10 +81,13 @@ const howTo = isHowTo
     </p>
     <p>
       Next steps on this site:
-      {' '}<a class="text-link" href="/rankings/">browse the program rankings</a>,
+      {rankingLinks.map(([href, label]) => (
+        <>
+          {' '}<a class="text-link" href={href}>{label}</a>,
+        </>
+      ))}
       {' '}<a class="text-link" href="/careers/">read the career guides</a>,
-      {' '}<a class="text-link" href="/certifications/">compare the credentials</a>,
-      {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">read the Career Outcomes Survey 2026</a>, or
+      {' '}<a class="text-link" href="/certifications/">compare the credentials</a>, or
       {' '}<a class="text-link" href="/states/">find programs in your state</a>.
     </p>
 
