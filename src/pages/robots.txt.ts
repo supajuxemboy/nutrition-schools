@@ -5,11 +5,44 @@ export const prerender = true;
 
 export const GET: APIRoute = () => {
   const body = `# NutritionSchools.org
-# All crawlers welcome, including AI and retrieval crawlers. If you cite us,
-# please carry the source attribution and stated limitations with the figure.
-
 User-agent: *
 Allow: /
+
+# Answer-engine / citation bots are explicitly welcome.
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Perplexity-User
+Allow: /
+
+# Training-only crawlers and training-opt-out tokens are disallowed here (blocked at the edge via Cloudflare WAF rules).
+User-agent: Google-Extended
+Disallow: /
+User-agent: Applebot-Extended
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: GPTBot
+Disallow: /
+User-agent: Bytespider
+Disallow: /
+User-agent: cohere-ai
+Disallow: /
+User-agent: Amazonbot
+Disallow: /
+User-agent: FacebookBot
+Disallow: /
+User-agent: meta-externalagent
+Disallow: /
+User-agent: CCBot
+Disallow: /
 
 Sitemap: ${site.url}/sitemap-index.xml
 
