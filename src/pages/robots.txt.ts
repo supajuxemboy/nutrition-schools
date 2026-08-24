@@ -22,6 +22,16 @@ Allow: /
 User-agent: Perplexity-User
 Allow: /
 
+# SEO / backlink-analysis tools are allowed for our own visibility tracking.
+User-agent: AhrefsBot
+Allow: /
+User-agent: SemrushBot
+Allow: /
+User-agent: DataForSeoBot
+Allow: /
+User-agent: PetalBot
+Allow: /
+
 # Training-only crawlers and training-opt-out tokens are disallowed here (blocked at the edge via Cloudflare WAF rules).
 User-agent: Google-Extended
 Disallow: /
@@ -39,9 +49,19 @@ User-agent: Amazonbot
 Disallow: /
 User-agent: FacebookBot
 Disallow: /
+User-agent: anthropic-ai
+Disallow: /
 User-agent: meta-externalagent
 Disallow: /
 User-agent: CCBot
+Disallow: /
+
+# Aggressive third-party SEO scrapers with no benefit to us are also disallowed here.
+User-agent: DotBot
+Disallow: /
+User-agent: MJ12bot
+Disallow: /
+User-agent: BLEXBot
 Disallow: /
 
 Sitemap: ${site.url}/sitemap-index.xml
