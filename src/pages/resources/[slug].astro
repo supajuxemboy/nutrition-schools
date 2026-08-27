@@ -89,6 +89,15 @@ const howTo = isHowTo
       {' '}<a class="text-link" href="/careers/">read the career guides</a>,
       {' '}<a class="text-link" href="/certifications/">compare the credentials</a>, or
       {' '}<a class="text-link" href="/states/">find programs in your state</a>.
+      {resource.slug === 'how-to-become-a-registered-dietitian-step-by-step' && (
+        <>
+          {' '}Placement is local, so open the
+          {' '}<a class="text-link" href="/states/california/">California program list</a>, the
+          {' '}<a class="text-link" href="/states/texas/">Texas list</a>, or
+          {' '}<a class="text-link" href="/states/south-carolina/">South Carolina</a> if you need neighbouring states
+          and accredited online options.
+        </>
+      )}
     </p>
 
     <Faq items={resource.faq} />

@@ -220,7 +220,7 @@ const itemList = {
                   <tr>
                     <td>{program.program}</td>
                     <td>{program.school}</td>
-                    <td>{program.stateName}</td>
+                    <td><a href={`/states/${program.state}/`}>{program.stateName}</a></td>
                     <td>{levelLabel[program.level] ?? 'Program'}{program.online ? ', online' : ''}</td>
                     <td>{program.score.toFixed(1)}</td>
                     <td><a href={program.url} target="_blank" rel="noopener noreferrer">Visit ↗</a></td>

@@ -257,6 +257,14 @@ const occupationSchema = data
       {' '}<a class="text-link" href="/certifications/">all credentials compared</a>,
       {' '}<a class="text-link" href="/resources/nutrition-salary-guide-2026/">the full salary guide</a>, and
       {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026</a>.
+      {career.slug === 'registered-dietitian-nutritionist' && (
+        <>
+          {' '}If you already know where you want to practise, start with
+          {' '}<a class="text-link" href="/states/california/">nutrition programs in California</a>,
+          {' '}<a class="text-link" href="/states/texas/">Texas</a>, or a thinner market such as
+          {' '}<a class="text-link" href="/states/south-carolina/">South Carolina</a>.
+        </>
+      )}
     </p>
 
     <Faq items={career.faq} />

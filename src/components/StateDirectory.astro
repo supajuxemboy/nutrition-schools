@@ -1,0 +1,16 @@
+---
+/**
+ * Crawlable A-Z list of every state page. Real <a href> in the HTML, no JS.
+ */
+import { stateList } from '../data/site';
+
+interface Props {
+  label?: string;
+}
+const { label = 'Browse nutrition programs by state' } = Astro.props;
+---
+<nav class="state-grid" aria-label={label}>
+  {stateList.map(([slug, name]) => (
+    <a href={`/states/${slug}/`}>{name}</a>
+  ))}
+</nav>

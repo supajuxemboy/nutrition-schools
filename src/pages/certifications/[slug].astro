@@ -170,6 +170,15 @@ const credentialSchema = {
       {' '}<a class="text-link" href="/careers/">career guides by occupation</a>,
       {' '}<a class="text-link" href="/resources/how-to-become-a-registered-dietitian-step-by-step/">the step by step RDN pathway</a>, and
       {' '}<a class="text-link" href="/resources/nutrition-career-outcomes/">the Career Outcomes Survey 2026</a>.
+      {cert.slug === 'ln' && (
+        <>
+          {' '}Licensure is granted state by state, so read the program and agency context for
+          {' '}<a class="text-link" href="/states/california/">California</a>,
+          {' '}<a class="text-link" href="/states/texas/">Texas</a>, and
+          {' '}<a class="text-link" href="/states/south-carolina/">South Carolina</a> rather than treating a national
+          credential as a licence.
+        </>
+      )}
     </p>
 
     <Faq items={cert.faq} />

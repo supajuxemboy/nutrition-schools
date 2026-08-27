@@ -99,10 +99,37 @@ const medianTuition = tuitions.length ? tuitions[Math.floor(tuitions.length / 2)
 const publicSchools = [...new Set(programs.filter(p => /public/i.test(p.control)).map(p => p.school))];
 
 const neighbors = (NEIGHBORS[slug] ?? []).map(n => ({ slug: n, name: stateNames[n], count: byState(n).length }))
-  .filter(n => n.count > 0)
   .sort((a, b) => b.count - a.count);
 
 const has = programs.length > 0;
+
+// Where a state has no programs of its own, the page previously named its
+// neighbours but never showed what those neighbours actually offer, so every
+// empty state read the same. Listing real records from bordering states gives
+// the reader somewhere to go and, because borders differ, makes each page
+// genuinely about this state rather than a template with the name swapped.
+const neighborGroups = programs.length > 2
+  ? []
+  : neighbors
+      .filter(n => n.count > 0)
+      .map(n => ({ ...n, programs: score(byState(n.slug)) }));
+const neighborPicks = neighborGroups.flatMap(g => g.programs.slice(0, 2)).slice(0, 6);
+const neighborTotal = neighborGroups.reduce((sum, g) => sum + g.programs.length, 0);
+const neighborNames = neighborGroups.map(g => g.name);
+const neighborList = neighborNames.length <= 1
+  ? (neighborNames[0] ?? '')
+  : `${neighborNames.slice(0, -1).join(', ')} and ${neighborNames[neighborNames.length - 1]}`;
+
+// Hawaii and Alaska border nothing, so the section above cannot run and both
+// pages would otherwise be interchangeable. The constraint each faces is real
+// and different, and worth saying rather than leaving a gap.
+const islandNotes: Record<string, string> = {
+  hawaii:
+    'Hawaii borders no state, so every option outside the islands involves a flight rather than a drive. That makes accredited online coursework unusually attractive here, and it makes the supervised practice question unusually sharp, because those hours have to be completed at a local site with a local preceptor. Before enrolling anywhere on the mainland, ask whether the program has placed a student in Hawaii before and whether it will help you secure a site, or expects you to arrange one yourself.',
+  alaska:
+    'Alaska borders no other state, and distance is not only a mainland problem here. Reaching a supervised practice site within Alaska can involve air travel and seasonal scheduling, so a program that assumes you can commute to a clinical site on weekdays is making an assumption that may not hold. Ask specifically how the program handles placements for geographically remote students, and get that answer before you enrol rather than during your practice term.',
+};
+const islandNote = programs.length > 2 ? undefined : islandNotes[slug];
 
 const faq = [
   {
@@ -400,6 +427,28 @@ const faq = [
       {' '}<a class="text-link" href="/certifications/ln/">state licensure guide</a> explains what to look for.
     </p>
 
+    {islandNote && (
+      <>
+        <h2>What {name} not bordering another state changes</h2>
+        <p>{islandNote}</p>
+      </>
+    )}
+
+    {neighborPicks.length > 0 && (
+      <>
+        <h2>Accredited programs in states bordering {name}</h2>
+        <p>
+          {name} borders {neighborList}, and our database holds {neighborTotal} {neighborTotal === 1 ? 'program' : 'programs'}
+          {' '}across those states{programs.length > 0 ? `, against ${programs.length} in ${name} itself` : ''}. This is the
+          part distance actually decides: coursework can be delivered from anywhere,
+          but the supervised practice hours behind an RDN credential have to be completed at a real site with a real
+          preceptor. A program already placing students near the {name} line is more likely to hold arrangements you can
+          reach than one on the other side of the country.
+        </p>
+        <ProgramRecords programs={neighborPicks} showState={true} />
+      </>
+    )}
+
     {neighbors.length > 0 && (
       <>
         <h2>{has ? `Programs in states bordering ${name}` : `Where the nearest programs are`}</h2>
@@ -413,7 +462,7 @@ const faq = [
             <thead><tr><th>State</th><th>Programs in our database</th></tr></thead>
             <tbody>
               {neighbors.map(n => (
-                <tr><td><a href={`/states/${n.slug}/`}>{n.name}</a></td><td>{n.count}</td></tr>
+                <tr><td><a href={`/states/${n.slug}/`}>{n.name}</a></td><td>{n.count || 'None in our database'}</td></tr>
               ))}
             </tbody>
           </table>

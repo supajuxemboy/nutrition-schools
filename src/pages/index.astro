@@ -2,7 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import AiSummary from '../components/AiSummary.astro';
 import Faq from '../components/Faq.astro';
-import { site, pillars, levels, specialties, modifiers, stateList } from '../data/site';
+import { site, pillars, levels, specialties, modifiers } from '../data/site';
+import StateDirectory from '../components/StateDirectory.astro';
 import { careers } from '../data/careers';
 import { certifications } from '../data/certifications';
 import { resources } from '../data/resources';
@@ -412,10 +413,14 @@ const faq = [
       <p class="lede">
         Each state page lists the institutions in our database with links to their official program pages, the state
         public health agency that administers community nutrition programs, and the accredited supervised practice
-        providers we can identify in that state.
+        providers we can identify in that state. Coverage is uneven:
+        {' '}<a href="/states/california/">California</a> and
+        {' '}<a href="/states/texas/">Texas</a> have deep program lists, while
+        {' '}<a href="/states/south-carolina/">South Carolina</a> currently has none in our database and is useful
+        mainly for neighbouring states and accredited online options with local placement.
       </p>
-      <div class="state-grid" style="margin-top:28px">
-        {stateList.map(([slug, name]) => <a href={`/states/${slug}/`}>{name} →</a>)}
+      <div style="margin-top:28px">
+        <StateDirectory />
       </div>
     </div>
   </section>
@@ -458,6 +463,11 @@ const faq = [
       Because it is the gate. Medical nutrition therapy is a defined scope of practice, and in most states providing it
       requires the credential plus state licensure or certification. Without it you are not competing for the same
       jobs, you are competing in a different and less regulated market where titles mean less and wages reflect that.
+      Check the local picture on pages such as
+      {' '}<a href="/states/california/">nutrition programs in California</a> and
+      {' '}<a href="/states/texas/">Texas</a>, and use
+      {' '}<a href="/states/south-carolina/">South Carolina</a> as an example of a state where our database currently
+      lists no programs.
     </p>
     <p>
       Our survey found that {outcomesSurvey.headline.employerHiringDifficulty} percent of employers reported difficulty

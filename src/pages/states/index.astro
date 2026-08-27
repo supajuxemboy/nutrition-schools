@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import AiSummary from '../../components/AiSummary.astro';
 import Faq from '../../components/Faq.astro';
 import { stateList, site } from '../../data/site';
+import StateDirectory from '../../components/StateDirectory.astro';
 import { allPrograms, stats } from '../../data/quality-index';
 import bls from '../../data/bls.json';
 
@@ -101,7 +102,12 @@ const faq = [
   <section class="section alt">
     <div class="wrap">
       <h2>Every state</h2>
-      <p class="lede">Program counts are from our own database and are not a claim of completeness.</p>
+      <p class="lede">
+        Crawlable directory of all 50 states and the District of Columbia. Program counts below are from our own
+        database and are not a claim of completeness.
+      </p>
+      <StateDirectory />
+      <p class="lede" style="margin-top:32px">Counts for each jurisdiction:</p>
       <div class="table-scroll">
         <table>
           <thead><tr><th>State</th><th>Programs tracked</th><th>Institutions</th><th>At ACEND schools</th><th>Online option</th></tr></thead>
@@ -174,7 +180,14 @@ const faq = [
       <>
         <h2>States where our coverage is thin</h2>
         <p>
-          We have no programs recorded in {without.length} of the 51 jurisdictions: {without.map(s => s.name).join(', ')}.
+          We have no programs recorded in {without.length} of the 51 jurisdictions:
+          {' '}{without.map((s, i) => (
+            <>
+              {i > 0 ? ', ' : ''}
+              <a href={`/states/${s.slug}/`}>{s.name}</a>
+            </>
+          ))}
+          .
           Some of these genuinely have few or no institutions offering a nutrition or dietetics credential. In others our
           database has simply not captured what exists. We publish the gap rather than filling it with guesses, and each
           of those pages points you to the neighbouring states and to accredited online options.

@@ -20,7 +20,15 @@ const money = (value: number | null) => (value === null ? null : `$${value.toLoc
             ? <span class="chip chip-acend">ACEND {program.acendType}</span>
             : <span class="chip" style="color:#8a4a2a;border-color:#d9b8a8">Not ACEND</span>}
         </h3>
-        <p class="school">{program.school}{showState ? ` · ${program.stateName}` : ''}</p>
+        <p class="school">
+          {program.school}
+          {showState && (
+            <>
+              {' · '}
+              <a href={`/states/${program.state}/`}>{program.stateName}</a>
+            </>
+          )}
+        </p>
         <dl>
           <div>
             <dt>Location</dt>
