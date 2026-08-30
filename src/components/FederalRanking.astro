@@ -1,0 +1,97 @@
+---
+/**
+ * Federal outcome ranking, computed from the U.S. Department of Education's
+ * College Scorecard field-of-study data.
+ *
+ * Two modes. In "outcomes" mode enough programs report graduate earnings to
+ * rank on them. In "scale" mode earnings are suppressed for most programs in
+ * the field, so the ranking falls back to program size and published price and
+ * says so rather than implying an outcomes ranking the data cannot support.
+ */
+interface Program {
+  rank: number; score: number; school: string; city: string; state: string;
+  control: string; url: string; awards: number | null;
+  earnings: number | null; gradRate: number | null; inState: number | null;
+}
+interface Props {
+  data: {
+    source: string; cip: string; credentialLevel: string; retrieved: string;
+    mode: string; reporting: number; ranked: number; earningsReported: number;
+    weights: Record<string, number>; states: number; programs: Program[];
+  };
+  heading?: string;
+  limit?: number;
+}
+const { data, heading = 'Ranked on federal outcome data', limit = 50 } = Astro.props;
+const shown = data.programs.slice(0, limit);
+const money = (n: number | null) => (n || n === 0 ? `$${n.toLocaleString()}` : '—');
+const outcomes = data.mode === 'outcomes';
+---
+<section class="fed-rank">
+  <h2>{heading}</h2>
+  <p>
+    Computed from the {data.source} for field of study {data.cip} at {data.credentialLevel.toLowerCase()} level.
+    {data.reporting} institutions report a program in this field; {data.ranked} report the measures below and are
+    ranked, across {data.states} states. Every institution links to its own site. No school pays for placement.
+  </p>
+  {outcomes ? (
+    <p>
+      Score combines median earnings two years after graduation at {data.weights.earnings}%, six-year graduation rate at
+      {' '}{data.weights.graduation}%, degrees awarded per year at {data.weights.scale}%, and published in-state tuition
+      at {data.weights.cost}%. Each measure is converted to a percentile before weighting, so one extreme value cannot
+      dominate the result.
+    </p>
+  ) : (
+    <p>
+      Earnings are suppressed for most programs in this field, appearing for only {data.earningsReported} of
+      {' '}{data.reporting}. Rather than rank a handful of large programs and present it as the field, this ranks what
+      the data supports: program scale at {data.weights.scale}% and published in-state price at {data.weights.cost}%.
+    </p>
+  )}
+  <div class="fed-note">
+    <strong>Two limitations worth stating.</strong> Earnings and award counts are specific to this field of study, but
+    graduation rate and tuition are reported for the whole institution, so a strong department inside a weaker
+    institution is penalised. And this is an outcomes comparison, not an accreditation check: confirm any programmatic
+    accreditation a career requires directly with the accreditor before applying.
+  </div>
+  <div class="fed-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Institution</th><th>Location</th><th>Type</th>
+          {outcomes && <th>Median earnings</th>}
+          {outcomes && <th>Grad rate</th>}
+          <th>Degrees/yr</th><th>In-state</th><th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {shown.map((p) => (
+          <tr>
+            <td>{p.rank}</td>
+            <td>{p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer">{p.school}</a> : p.school}</td>
+            <td>{p.city}, {p.state}</td>
+            <td>{p.control}</td>
+            {outcomes && <td>{money(p.earnings)}</td>}
+            {outcomes && <td>{p.gradRate === null ? '—' : `${p.gradRate}%`}</td>}
+            <td>{p.awards ?? '—'}</td>
+            <td>{money(p.inState)}</td>
+            <td>{p.score}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="fed-source">
+    Source: {data.source}. Retrieved {data.retrieved}. Showing the top {shown.length} of {data.ranked}. Institutions
+    missing any ranked measure are excluded rather than estimated.
+  </p>
+</section>
+<style>
+  .fed-rank { margin: 34px 0; }
+  .fed-scroll { overflow-x: auto; }
+  .fed-rank table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .fed-rank th, .fed-rank td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,.1); white-space: nowrap; }
+  .fed-rank td:nth-child(2) { white-space: normal; min-width: 200px; }
+  .fed-note { margin: 16px 0; padding: 14px 16px; border-left: 3px solid currentColor; opacity: .9; font-size: 15px; }
+  .fed-source { font-size: 13px; opacity: .75; margin-top: 12px; }
+</style>

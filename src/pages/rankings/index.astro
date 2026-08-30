@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import FederalRanking from '../../components/FederalRanking.astro';
+import federalData from '../../data/federal-ranking.json';
 import AiSummary from '../../components/AiSummary.astro';
 import Faq from '../../components/Faq.astro';
 import { rankingGroups, levels, specialties, modifiers } from '../../data/site';
@@ -178,4 +180,4 @@ const faq = [
       database covers {stats.programs} programs and is not exhaustive.
     </div>
   </article>
-</BaseLayout>
+<FederalRanking data={federalData} heading="Best Nutrition and Dietetics Bachelor’s Programs, Ranked on Federal Data" /></BaseLayout>
