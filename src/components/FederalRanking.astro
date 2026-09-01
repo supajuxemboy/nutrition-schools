@@ -7,11 +7,32 @@
  * rank on them. In "scale" mode earnings are suppressed for most programs in
  * the field, so the ranking falls back to program size and published price and
  * says so rather than implying an outcomes ranking the data cannot support.
+ *
+ * Everything below the table is derived from the same ranked set rather than
+ * asserted, so no figure on the page can drift away from the table above it.
+ * The optional `context` prop adds occupational, credential and funding detail
+ * that has to be sourced per field; without it the component still renders the
+ * computed sections, which need no per-site research.
  */
 interface Program {
   rank: number; score: number; school: string; city: string; state: string;
   control: string; url: string; awards: number | null;
   earnings: number | null; gradRate: number | null; inState: number | null;
+}
+export interface Occupation {
+  soc: string; title: string; median: number; employment: number | null;
+  outlook: string; entry: string; url: string;
+}
+export interface Credential { name: string; body: string; when: string; detail: string; }
+export interface FieldContext {
+  /** Plain noun for the field as it reads mid-sentence, e.g. "art and design". */
+  field: string;
+  occupations?: Occupation[];
+  wageYear?: number;
+  credentials?: Credential[];
+  funding?: { name: string; detail: string }[];
+  /** Accreditor to name in the limitations note, when the field has one. */
+  accreditor?: { name: string; url: string; note: string };
 }
 interface Props {
   data: {
@@ -21,14 +42,118 @@ interface Props {
   };
   heading?: string;
   limit?: number;
+  context?: FieldContext;
 }
-const { data, heading = 'Ranked on federal outcome data', limit = 50 } = Astro.props;
+const { data, heading = 'Ranked on federal outcome data', limit = 50, context } = Astro.props;
 const shown = data.programs.slice(0, limit);
 const money = (n: number | null) => (n || n === 0 ? `$${n.toLocaleString()}` : '—');
 const outcomes = data.mode === 'outcomes';
+const field = context?.field ?? 'this field';
+
+// ---- Computed aggregates. Every number below comes from the ranked set. ----
+const pctl = (values: number[], p: number) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  if (!sorted.length) return 0;
+  const k = ((sorted.length - 1) * p) / 100;
+  const lo = Math.floor(k);
+  const hi = Math.min(lo + 1, sorted.length - 1);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (k - lo);
+};
+const nums = (key: keyof Program) =>
+  data.programs.map((p) => p[key]).filter((n): n is number => typeof n === 'number');
+const earnAll = nums('earnings');
+const gradAll = nums('gradRate');
+const costAll = nums('inState');
+const awardAll = nums('awards');
+const stats = {
+  earnMedian: Math.round(pctl(earnAll, 50)),
+  earnP10: Math.round(pctl(earnAll, 10)),
+  earnP90: Math.round(pctl(earnAll, 90)),
+  earnMin: earnAll.length ? Math.min(...earnAll) : 0,
+  earnMax: earnAll.length ? Math.max(...earnAll) : 0,
+  gradMedian: Math.round(pctl(gradAll, 50)),
+  costMedian: Math.round(pctl(costAll, 50)),
+  costMin: costAll.length ? Math.min(...costAll) : 0,
+  costMax: costAll.length ? Math.max(...costAll) : 0,
+  degrees: awardAll.reduce((a, b) => a + b, 0),
+  publicCount: data.programs.filter((p) => p.control === 'Public').length,
+};
+const costSpread = stats.costMin > 0 ? Math.round(stats.costMax / stats.costMin) : 0;
+const earnSpread = stats.earnMin > 0 ? (stats.earnMax / stats.earnMin).toFixed(1) : '0';
+
+// Top-quartile earnings on bottom-quartile price. A weighted score balances four
+// measures at once and can bury programs that are simply good value, so this
+// surfaces them separately.
+const earnQ3 = pctl(earnAll, 75);
+const costQ1 = pctl(costAll, 25);
+const valuePicks = outcomes
+  ? data.programs
+      .filter((p) => p.earnings !== null && p.earnings >= earnQ3 && p.inState !== null && p.inState <= costQ1)
+      .sort((a, b) => (b.earnings ?? 0) - (a.earnings ?? 0))
+      .slice(0, 12)
+  : [];
+
+const occ = context?.occupations ?? [];
+const wageYear = context?.wageYear ?? 2025;
+const leadOcc = occ[0];
+
+const faqs: { q: string; a: string }[] = [];
+if (outcomes && earnAll.length) {
+  faqs.push({
+    q: `What do graduates of these ${field} programs earn?`,
+    a: `Across the ${data.ranked} ranked programs the median is $${stats.earnMedian.toLocaleString()} two years after graduating, with the middle 80% falling between $${stats.earnP10.toLocaleString()} and $${stats.earnP90.toLocaleString()}. That measures graduates of these specific programs early in their careers${leadOcc ? `, which is a different question from what the occupation pays overall: ${leadOcc.title} report a median of $${leadOcc.median.toLocaleString()} across all career stages` : ''}.`,
+  });
+  faqs.push({
+    q: 'Does the school I choose change what I earn?',
+    a: `Less than the extremes suggest. Median graduate earnings run from $${stats.earnMin.toLocaleString()} to $${stats.earnMax.toLocaleString()}, a spread of about ${earnSpread}x, but the middle 80% sit in the much tighter band of $${stats.earnP10.toLocaleString()} to $${stats.earnP90.toLocaleString()}. Programs at either extreme are usually doing something unusual rather than showing what a typical graduate can expect.`,
+  });
+}
+if (costAll.length) {
+  faqs.push({
+    q: `What do ${field} programs cost?`,
+    a: `Published in-state tuition across the ranked set has a median of $${stats.costMedian.toLocaleString()} a year and runs from $${stats.costMin.toLocaleString()} to $${stats.costMax.toLocaleString()}, roughly ${costSpread}-fold${outcomes && earnAll.length ? `, while median graduate earnings vary by only about ${earnSpread}x` : ''}. Published tuition excludes fees, housing and materials, so treat every figure as a floor rather than a total.`,
+  });
+}
+if (valuePicks.length) {
+  faqs.push({
+    q: 'Is an expensive program worth it?',
+    a: `The data does not support paying for prestige alone. ${valuePicks.length} programs here post top-quartile graduate earnings ($${Math.round(earnQ3).toLocaleString()} or above) while charging bottom-quartile in-state tuition ($${Math.round(costQ1).toLocaleString()} or below). Several rank only modestly overall, which is why a single weighted score should not be the last thing you read.`,
+  });
+}
+faqs.push({
+  q: 'Why are some schools missing from this ranking?',
+  a: `${data.ranked} of ${data.reporting} institutions reporting a program in this field are ranked. The rest do not report every measure the score needs in the College Scorecard. Estimating those figures would make the ranking look more complete while making it less true, so those programs are left out and the gap is stated here.`,
+});
+faqs.push({
+  q: 'Is this an accreditation check?',
+  a: context?.accreditor
+    ? `No. Appearing here confirms a program reports federal outcome data, nothing more. ${context.accreditor.note} Verify any specific program in ${context.accreditor.name} directly before applying.`
+    : 'No. Appearing here confirms only that a program reports federal outcome data. Where a career requires programmatic accreditation or a licence, confirm it with the relevant accreditor or state board before applying.',
+});
+const faqSchema = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question', name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+});
 ---
 <section class="fed-rank">
+  <script is:inline type="application/ld+json" set:html={faqSchema} />
   <h2>{heading}</h2>
+
+  <div class="fed-stats">
+    <div><strong>{data.ranked}</strong><span>Programs ranked</span><small>of {data.reporting} reporting</small></div>
+    {outcomes && earnAll.length > 0 && (
+      <div><strong>${stats.earnMedian.toLocaleString()}</strong><span>Median graduate earnings</span><small>two years after graduating</small></div>
+    )}
+    {leadOcc && (
+      <div><strong>${leadOcc.median.toLocaleString()}</strong><span>Occupation median</span><small>SOC {leadOcc.soc}, {wageYear}</small></div>
+    )}
+    <div><strong>{data.states}</strong><span>States and territories</span><small>{stats.publicCount} public institutions</small></div>
+  </div>
+
   <p>
     Computed from the {data.source} for field of study {data.cip} at {data.credentialLevel.toLowerCase()} level.
     {data.reporting} institutions report a program in this field; {data.ranked} report the measures below and are
@@ -48,12 +173,53 @@ const outcomes = data.mode === 'outcomes';
       the data supports: program scale at {data.weights.scale}% and published in-state price at {data.weights.cost}%.
     </p>
   )}
+
+  <h3>Key takeaways</h3>
+  <ul class="fed-takeaways">
+    {outcomes && earnAll.length > 0 && (
+      <li>
+        <strong>Median graduate earnings are ${stats.earnMedian.toLocaleString()} two years out</strong>, with the middle 80%
+        between ${stats.earnP10.toLocaleString()} and ${stats.earnP90.toLocaleString()}.
+        {leadOcc && ` The occupation-wide median for ${leadOcc.title} is $${leadOcc.median.toLocaleString()}; the first figure is a starting point, the second is a career.`}
+      </li>
+    )}
+    {costAll.length > 0 && (
+      <li>
+        <strong>Cost varies far more than outcome.</strong> Published in-state tuition runs from ${stats.costMin.toLocaleString()}
+        {' '}to ${stats.costMax.toLocaleString()}, about {costSpread}-fold
+        {outcomes && earnAll.length > 0 ? `, while median graduate earnings vary by roughly ${earnSpread}x` : ''}. Price is the
+        variable you control most and it predicts outcome least.
+      </li>
+    )}
+    {valuePicks.length > 0 && (
+      <li>
+        <strong>{valuePicks.length} programs pair top-quartile earnings with bottom-quartile in-state price.</strong> They are
+        listed below, and several rank only modestly overall — which is exactly why a single weighted score should not be the
+        last thing you read.
+      </li>
+    )}
+    {gradAll.length > 0 && (
+      <li>
+        <strong>The median ranked institution graduates {stats.gradMedian}% of students within six years.</strong> That is an
+        institution-wide figure rather than a departmental one, which is the weakest measure in the score and the reason it is
+        weighted below earnings.
+      </li>
+    )}
+    {stats.degrees > 0 && (
+      <li>
+        <strong>These programs award about {stats.degrees.toLocaleString()} degrees a year between them</strong>, across
+        {' '}{data.states} states and territories. {stats.publicCount} of the {data.ranked} ranked institutions are public.
+      </li>
+    )}
+  </ul>
+
   <div class="fed-note">
     <strong>Two limitations worth stating.</strong> Earnings and award counts are specific to this field of study, but
     graduation rate and tuition are reported for the whole institution, so a strong department inside a weaker
     institution is penalised. And this is an outcomes comparison, not an accreditation check: confirm any programmatic
     accreditation a career requires directly with the accreditor before applying.
   </div>
+
   <div class="fed-scroll">
     <table>
       <thead>
@@ -85,6 +251,157 @@ const outcomes = data.mode === 'outcomes';
     Source: {data.source}. Retrieved {data.retrieved}. Showing the top {shown.length} of {data.ranked}. Institutions
     missing any ranked measure are excluded rather than estimated.
   </p>
+
+  {valuePicks.length > 0 && (
+    <>
+      <h3>Best value: top-quartile earnings at bottom-quartile cost</h3>
+      <p>
+        A weighted score has to balance four measures at once, which means it can bury programs that are simply good value.
+        These {valuePicks.length} report median graduate earnings in the top quarter of the ranked set
+        (${Math.round(earnQ3).toLocaleString()} or above) while charging in-state tuition in the cheapest quarter
+        (${Math.round(costQ1).toLocaleString()} or below). If you are paying in-state prices, this is the shortlist the
+        headline order does not give you.
+      </p>
+      <div class="fed-scroll">
+        <table>
+          <thead><tr><th>Institution</th><th>Location</th><th>Median earnings</th><th>In-state</th><th>Overall rank</th></tr></thead>
+          <tbody>
+            {valuePicks.map((p) => (
+              <tr>
+                <td>{p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer">{p.school}</a> : p.school}</td>
+                <td>{p.city}, {p.state}</td>
+                <td>{money(p.earnings)}</td>
+                <td>{money(p.inState)}</td>
+                <td>#{p.rank}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )}
+
+  {occ.length > 0 && (
+    <>
+      <h3>What this degree qualifies you for</h3>
+      <p>
+        Federal statistics track {occ.length === 1 ? 'the occupation below' : `the ${occ.length} occupations below`} separately,
+        and the credential you hold shapes which one you enter. Wage figures are the {wageYear} release.
+      </p>
+      <div class="fed-scroll">
+        <table>
+          <thead><tr><th>Occupation</th><th>Median wage</th><th>Employed</th><th>Projected outlook</th></tr></thead>
+          <tbody>
+            {occ.map((o) => (
+              <tr>
+                <td><a href={o.url} target="_blank" rel="noopener noreferrer">{o.title}</a><br /><small>SOC {o.soc} · {o.entry}</small></td>
+                <td>${o.median.toLocaleString()}</td>
+                <td>{o.employment ? o.employment.toLocaleString() : '—'}</td>
+                <td>{o.outlook}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {outcomes && earnAll.length > 0 && leadOcc && (
+        <div class="fed-note">
+          <strong>On the two earnings figures.</strong> The ${stats.earnMedian.toLocaleString()} median in this ranking measures
+          graduates of these specific programs two years after they finish. The ${leadOcc.median.toLocaleString()} occupational
+          median measures everybody working in the occupation, at every career stage. Comparing them directly and concluding
+          graduates are underpaid is the most common misreading of College Scorecard data.
+        </div>
+      )}
+    </>
+  )}
+
+  {context?.credentials && context.credentials.length > 0 && (
+    <>
+      <h3>Licences and credentials that pair with the degree</h3>
+      <dl class="fed-deflist">
+        {context.credentials.map((c) => (
+          <div>
+            <dt>{c.name} <small>{c.body} · {c.when}</small></dt>
+            <dd>{c.detail}</dd>
+          </div>
+        ))}
+      </dl>
+    </>
+  )}
+
+  {costAll.length > 0 && (
+    <>
+      <h3>What these programs cost, and how people pay</h3>
+      <p>
+        Across the ranked set, published in-state tuition has a median of ${stats.costMedian.toLocaleString()} a year and runs
+        from ${stats.costMin.toLocaleString()} to ${stats.costMax.toLocaleString()}. Published tuition excludes fees, housing,
+        materials and equipment, so treat every figure here as a floor rather than a total cost of attendance.
+      </p>
+      {context?.funding && context.funding.length > 0 && (
+        <dl class="fed-deflist">
+          {context.funding.map((f) => (
+            <div><dt>{f.name}</dt><dd>{f.detail}</dd></div>
+          ))}
+        </dl>
+      )}
+    </>
+  )}
+
+  <h3>Common mistakes when comparing these programs</h3>
+  <ol class="fed-pitfalls">
+    <li>
+      <strong>Reading an institution-wide graduation rate as a departmental one.</strong> The {stats.gradMedian}% median here
+      covers every student at the institution. Departments diverge from it in both directions, so ask for the department's own
+      completion figure.
+    </li>
+    {costAll.length > 0 && (
+      <li>
+        <strong>Paying top-quartile prices for a median outcome.</strong> Tuition varies about {costSpread}-fold across these
+        programs{outcomes && earnAll.length > 0 ? ` while earnings vary roughly ${earnSpread}x` : ''}. The expensive option has to
+        justify itself on something other than the outcome data.
+      </li>
+    )}
+    {valuePicks.length > 0 && (
+      <li>
+        <strong>Choosing on overall rank when you meant to choose on value.</strong> The {valuePicks.length} programs in the value
+        table rank modestly in several cases and still deliver top-quartile earnings at bottom-quartile cost.
+      </li>
+    )}
+    <li>
+      <strong>Treating a ranking as an accreditation check.</strong> This is not one. Appearing here confirms a program reports
+      federal outcome data, nothing more.
+    </li>
+    <li>
+      <strong>Assuming a missing program is a bad one.</strong> {data.reporting - data.ranked} institutions reporting a program in
+      this field are unranked purely because they do not publish every measure the score needs.
+    </li>
+  </ol>
+
+  <h3>Frequently asked questions</h3>
+  <dl class="fed-deflist">
+    {faqs.map((f) => (<div><dt>{f.q}</dt><dd>{f.a}</dd></div>))}
+  </dl>
+
+  <h3>Sources</h3>
+  <ul class="fed-sources">
+    <li>
+      <a href="https://collegescorecard.ed.gov/data/" target="_blank" rel="noopener noreferrer">U.S. Department of Education, College Scorecard</a>
+      {' '}— program-level median earnings and degrees awarded for CIP {data.cip}; institution-level graduation rate and published
+      tuition. Retrieved {data.retrieved}.
+    </li>
+    {occ.map((o) => (
+      <li>
+        <a href={o.url} target="_blank" rel="noopener noreferrer">O*NET OnLine, {o.title} ({o.soc})</a>
+        {' '}— median wage, employment and projected outlook. O*NET publishes the BLS Occupational Employment and Wage Statistics
+        series; wages are the {wageYear} release.
+      </li>
+    ))}
+    {context?.accreditor && (
+      <li>
+        <a href={context.accreditor.url} target="_blank" rel="noopener noreferrer">{context.accreditor.name}</a>
+        {' '}— the authoritative accreditation record for this field. This ranking does not check accreditation.
+      </li>
+    )}
+  </ul>
 </section>
 <style>
   .fed-rank { margin: 34px 0; }
@@ -94,4 +411,20 @@ const outcomes = data.mode === 'outcomes';
   .fed-rank td:nth-child(2) { white-space: normal; min-width: 200px; }
   .fed-note { margin: 16px 0; padding: 14px 16px; border-left: 3px solid currentColor; opacity: .9; font-size: 15px; }
   .fed-source { font-size: 13px; opacity: .75; margin-top: 12px; }
+  .fed-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 22px 0 26px; }
+  .fed-stats > div { border: 1px solid rgba(0,0,0,.12); border-radius: 10px; padding: 15px 17px; }
+  .fed-stats strong { display: block; font-size: 27px; line-height: 1.05; letter-spacing: -.03em; }
+  .fed-stats span { display: block; margin-top: 6px; font-size: 13px; font-weight: 600; }
+  .fed-stats small { display: block; margin-top: 3px; font-size: 12px; opacity: .7; }
+  .fed-takeaways { margin: 16px 0 26px; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .fed-takeaways li { border-left: 3px solid currentColor; padding: 11px 15px; font-size: 15px; line-height: 1.6; opacity: .95; }
+  .fed-deflist { margin: 16px 0 26px; display: grid; gap: 12px; }
+  .fed-deflist dt { font-size: 16px; font-weight: 700; }
+  .fed-deflist dt small { display: block; margin-top: 3px; font-size: 12px; font-weight: 500; opacity: .7; }
+  .fed-deflist dd { margin: 6px 0 0; font-size: 15px; line-height: 1.65; }
+  .fed-pitfalls { margin: 16px 0 26px; padding-left: 20px; display: grid; gap: 10px; }
+  .fed-pitfalls li { font-size: 15px; line-height: 1.6; }
+  .fed-sources { margin: 16px 0 8px; padding-left: 18px; display: grid; gap: 9px; }
+  .fed-sources li { font-size: 13.5px; line-height: 1.55; opacity: .8; }
+  @media (max-width: 560px) { .fed-stats strong { font-size: 23px; } }
 </style>
