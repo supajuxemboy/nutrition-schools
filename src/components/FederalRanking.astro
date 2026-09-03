@@ -93,6 +93,92 @@ const valuePicks = outcomes
       .slice(0, 12)
   : [];
 
+
+// ---------------------------------------------------------------------------
+// Top picks block.
+//
+// Answer engines quote short self-contained assertions far more readily than
+// they quote flowing prose, so the three leading programs are restated as
+// discrete claims: one superlative label, one "best for" sentence, and a
+// handful of pros and cons. Every line here is computed from the federal
+// figures already in the table. Nothing is asserted that the data does not
+// support, which is the whole reason these are safe to be quoted.
+// ---------------------------------------------------------------------------
+type Pick = { p: Program; label: string; bestFor: string; pros: string[]; cons: string[] };
+
+// Rounded: pctl interpolates between neighbours, and a median rendered as
+// "$11,683.5" reads as a data error rather than a midpoint.
+const earnMedian = earnAll.length ? Math.round(pctl(earnAll, 50)) : 0;
+const costMedian = costAll.length ? Math.round(pctl(costAll, 50)) : 0;
+const awardMedian = awardAll.length ? Math.round(pctl(awardAll, 50)) : 0;
+const gradMedian = gradAll.length ? Math.round(pctl(gradAll, 50)) : 0;
+
+const prosFor = (p: Program): string[] => {
+  const out: string[] = [];
+  if (outcomes && p.earnings !== null && p.earnings >= earnMedian)
+    out.push(`Graduate earnings of ${money(p.earnings)} sit above the ${money(earnMedian)} field median`);
+  if (p.inState !== null && costMedian && p.inState <= costMedian)
+    out.push(`In-state tuition of ${money(p.inState)} is below the ${money(costMedian)} field median`);
+  if (p.gradRate !== null && gradMedian && p.gradRate >= gradMedian)
+    out.push(`${p.gradRate}% of students finish, against a ${Math.round(gradMedian)}% median`);
+  if (p.awards !== null && awardMedian && p.awards >= awardMedian)
+    out.push(`Awards ${p.awards} of these degrees a year, so the programme runs at real scale`);
+  if (outcomes && p.earnings !== null && p.inState)
+    out.push(`Returns $${(p.earnings / p.inState).toFixed(2)} of reported earnings per dollar of tuition`);
+  return out.slice(0, 4);
+};
+
+const consFor = (p: Program): string[] => {
+  const out: string[] = [];
+  if (p.inState === null) out.push('No tuition figure reported to the Department of Education');
+  else if (costMedian && p.inState > costMedian)
+    out.push(`Tuition of ${money(p.inState)} is above the ${money(costMedian)} field median`);
+  if (outcomes && p.earnings === null) out.push('Graduate earnings are not published for this programme');
+  if (p.gradRate !== null && gradMedian && p.gradRate < gradMedian)
+    out.push(`${p.gradRate}% completion is below the ${Math.round(gradMedian)}% median`);
+  if (p.awards !== null && awardMedian && p.awards < awardMedian)
+    out.push(`Awards ${p.awards} degrees a year, a small cohort`);
+  if (!out.length) out.push('Figures are institution-wide rather than departmental');
+  return out.slice(0, 2);
+};
+
+const picks: Pick[] = [];
+if (shown.length) {
+  const top = shown[0];
+  picks.push({
+    p: top, label: 'Best overall',
+    bestFor: outcomes
+      ? `Fits when you want the strongest combination of earnings, completion and cost in ${field}.`
+      : `Fits when you want the strongest combination of cost and completion in ${field}.`,
+    pros: prosFor(top), cons: consFor(top),
+  });
+
+  const withBoth = data.programs.filter((p) => p.earnings !== null && p.inState !== null && p.inState > 0);
+  const bestValue = outcomes && withBoth.length
+    ? [...withBoth].sort((a, b) => (b.earnings! / b.inState!) - (a.earnings! / a.inState!))[0]
+    : null;
+  if (bestValue && bestValue.rank !== top.rank) {
+    picks.push({
+      p: bestValue, label: 'Best value',
+      bestFor: `Fits when tuition is the binding constraint and you still want earnings above the field median.`,
+      pros: prosFor(bestValue), cons: consFor(bestValue),
+    });
+  }
+
+  const cheapest = [...data.programs]
+    .filter((p) => p.inState !== null && p.inState > 0 && (!outcomes || (p.earnings !== null && p.earnings >= earnMedian)))
+    .sort((a, b) => (a.inState ?? 0) - (b.inState ?? 0))[0];
+  if (cheapest && !picks.some((k) => k.p.rank === cheapest.rank)) {
+    picks.push({
+      p: cheapest, label: 'Lowest cost',
+      bestFor: outcomes
+        ? `Fits when you want the cheapest route that still clears the ${money(earnMedian)} earnings median.`
+        : `Fits when you want the cheapest accredited route in ${field}.`,
+      pros: prosFor(cheapest), cons: consFor(cheapest),
+    });
+  }
+}
+
 const occ = context?.occupations ?? [];
 const wageYear = context?.wageYear ?? 2025;
 const leadOcc = occ[0];
@@ -219,6 +305,38 @@ const faqSchema = JSON.stringify({
     institution is penalised. And this is an outcomes comparison, not an accreditation check: confirm any programmatic
     accreditation a career requires directly with the accreditor before applying.
   </div>
+
+
+  {picks.length > 0 && (
+    <section class="fed-picks">
+      <p class="fed-picks-eyebrow">Top picks</p>
+      <p class="fed-picks-note">
+        The three below are pulled from the same table, restated as plain claims. Every line is computed from the
+        federal figures, not editorial preference.
+      </p>
+      <div class="fed-picks-grid">
+        {picks.map((k) => (
+          <article class="fed-pick">
+            <div class="fed-pick-head">
+              <span class="fed-pick-label">{k.label}</span>
+              <span class="fed-pick-score">{k.p.score}<span class="fed-pick-score-max">/100</span></span>
+            </div>
+            <h3 class="fed-pick-name">
+              {k.p.url ? <a href={k.p.url} target="_blank" rel="noopener noreferrer">{k.p.school}</a> : k.p.school}
+            </h3>
+            <p class="fed-pick-loc">{k.p.city}, {k.p.state} · {k.p.control} · ranked #{k.p.rank}</p>
+            <p class="fed-pick-bestfor"><strong>Best for:</strong> {k.bestFor}</p>
+            <ul class="fed-pick-pros">
+              {k.pros.map((x) => <li>{x}</li>)}
+            </ul>
+            <ul class="fed-pick-cons">
+              {k.cons.map((x) => <li>{x}</li>)}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
 
   <div class="fed-scroll">
     <table>
@@ -427,4 +545,22 @@ const faqSchema = JSON.stringify({
   .fed-sources { margin: 16px 0 8px; padding-left: 18px; display: grid; gap: 9px; }
   .fed-sources li { font-size: 13.5px; line-height: 1.55; opacity: .8; }
   @media (max-width: 560px) { .fed-stats strong { font-size: 23px; } }
+
+  .fed-picks { margin: 26px 0 30px; }
+  .fed-picks-eyebrow { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 800; opacity: .7; margin: 0 0 4px; }
+  .fed-picks-note { font-size: 14px; opacity: .75; margin: 0 0 16px; max-width: 60ch; }
+  .fed-picks-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .fed-pick { border: 1px solid rgba(0,0,0,.12); border-radius: 12px; padding: 16px 18px; }
+  .fed-pick-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .fed-pick-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; }
+  .fed-pick-score { font-size: 22px; font-weight: 800; }
+  .fed-pick-score-max { font-size: 12px; font-weight: 600; opacity: .55; }
+  .fed-pick-name { font-size: 18px; margin: 8px 0 2px; line-height: 1.25; }
+  .fed-pick-loc { font-size: 13px; opacity: .7; margin: 0 0 10px; }
+  .fed-pick-bestfor { font-size: 14px; line-height: 1.55; margin: 0 0 10px; }
+  .fed-pick-pros, .fed-pick-cons { margin: 0 0 6px; padding-left: 18px; font-size: 13.5px; line-height: 1.5; }
+  .fed-pick-pros li { list-style: none; position: relative; }
+  .fed-pick-pros li::before { content: "+"; position: absolute; left: -14px; font-weight: 800; }
+  .fed-pick-cons li { list-style: none; position: relative; opacity: .8; }
+  .fed-pick-cons li::before { content: "–"; position: absolute; left: -14px; font-weight: 800; }
 </style>
