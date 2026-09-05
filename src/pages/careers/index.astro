@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import EsyohWidget from '../../components/EsyohWidget.astro';
 import AiSummary from '../../components/AiSummary.astro';
 import Faq from '../../components/Faq.astro';
 import { careers } from '../../data/careers';
@@ -54,6 +55,7 @@ const faq = [
     <div class="wrap">
       <p class="eyebrow">Careers</p>
       <h1>Nutrition careers, with the parts the brochures leave out</h1>
+<EsyohWidget label="Programs accepting applicants now" intro="Accredited nutrition and dietetics programs currently taking applications." />
       <p class="lede">
         {careers.length} occupations covered, each with federal wage data, the credential you actually need, the
         pathway to get there, and a realistic description of what the work is like on a Tuesday afternoon.
@@ -239,4 +241,5 @@ const faq = [
       and no wage figure is a promise about what you will be offered.
     </div>
   </article>
+<EsyohWidget label="Compare accredited programs" intro="Explore accredited nutrition and dietetics programs before you decide." />
 </BaseLayout>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import EsyohWidget from '../../components/EsyohWidget.astro';
 import FederalRanking from '../../components/FederalRanking.astro';
 import { nutritionContext } from '../../data/field-context';
 import federalData from '../../data/federal-ranking.json';
@@ -47,6 +48,7 @@ const faq = [
     <div class="wrap">
       <p class="eyebrow">Rankings</p>
       <h1>Nutrition program rankings, scored on published evidence</h1>
+<EsyohWidget label="Programs accepting applicants now" intro="Accredited nutrition and dietetics programs currently taking applications." />
       <p class="lede">
         {total} rankings generated from {stats.programs} programs at {stats.schools} institutions. Every score comes
         from the seven-factor {qualityStudy.shortName}, every factor is published, and no institution pays to be here.
@@ -181,4 +183,5 @@ const faq = [
       database covers {stats.programs} programs and is not exhaustive.
     </div>
   </article>
-<FederalRanking data={federalData} heading="Best Nutrition and Dietetics Bachelor’s Programs, Ranked on Federal Data" context={nutritionContext} /></BaseLayout>
+<FederalRanking data={federalData} heading="Best Nutrition and Dietetics Bachelor’s Programs, Ranked on Federal Data" context={nutritionContext} /><EsyohWidget label="Compare accredited programs" intro="Explore accredited nutrition and dietetics programs before you decide." />
+</BaseLayout>

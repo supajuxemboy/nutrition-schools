@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import EsyohWidget from '../../components/EsyohWidget.astro';
 import AiSummary from '../../components/AiSummary.astro';
 import Faq from '../../components/Faq.astro';
 import { stateList, site } from '../../data/site';
@@ -58,6 +59,7 @@ const faq = [
     <div class="wrap">
       <p class="eyebrow">Programs by state</p>
       <h1>Nutrition and dietetics programs by state</h1>
+<EsyohWidget label="Programs accepting applicants now" intro="Accredited nutrition and dietetics programs currently taking applications." />
       <p class="lede">
         Where you study decides where you can complete supervised practice, and supervised practice decides your career.
         These pages list the programs in our database by state, with the public health agencies and employer categories
@@ -204,4 +206,5 @@ const faq = [
       authoritative source, and ACEND is authoritative on accreditation.
     </div>
   </article>
+<EsyohWidget label="Compare accredited programs" intro="Explore accredited nutrition and dietetics programs before you decide." />
 </BaseLayout>

@@ -1,0 +1,77 @@
+---
+import { ESYOH_DOMAIN_ID, ESYOH_WIDGET_ID } from '../config/esyoh';
+
+interface Props {
+  label?: string;
+  intro?: string;
+}
+const { label, intro } = Astro.props;
+
+/**
+ * With no unit provisioned for this domain there is nothing to render. An
+ * empty sponsored frame is worse than no frame, so the component emits
+ * nothing rather than reserving space for inventory that cannot arrive.
+ */
+const enabled = ESYOH_WIDGET_ID !== '';
+---
+{enabled && (
+  <section class="esy-widget-wrapper" data-esy-wrapper hidden>
+    {label && <h3 class="esy-widget-heading">{label}</h3>}
+    {intro && <p class="esy-widget-intro">{intro}</p>}
+    <p class="esy-widget-disclosure">Sponsored. We may be paid if you contact a school listed here.</p>
+    <div class="esy_widget_container"></div>
+  </section>
+)}
+{enabled && (
+  <script define:vars={{ widgetId: ESYOH_WIDGET_ID, domainId: ESYOH_DOMAIN_ID }}>
+    if (!document.getElementById('esyoh-widget-js')) {
+      const script = document.createElement('script');
+      script.src = 'https://www.esyoh.com/clients/js/widget.js?ver=3.0.0';
+      script.id = 'esyoh-widget-js';
+      document.head.appendChild(script);
+    }
+
+    // The heading, the disclosure and the frame are chrome around inventory
+    // that has not arrived yet. Esyoh fills the container by JSONP a couple of
+    // seconds after load, and a unit with no inventory for the visitor's state
+    // never fills at all, so the wrapper stays hidden until the container
+    // actually gains children. The container keeps its own size throughout:
+    // widget.js measures it, and observes units past the second one with an
+    // IntersectionObserver that would never fire against a hidden element.
+    document.querySelectorAll('[data-esy-wrapper]').forEach(function (wrapper) {
+      const container = wrapper.querySelector('.esy_widget_container');
+      if (!container) return;
+      wrapper.hidden = false;
+      wrapper.style.visibility = 'hidden';
+      const reveal = function () {
+        if (container.childElementCount > 0) {
+          wrapper.style.visibility = '';
+          observer.disconnect();
+        }
+      };
+      const observer = new MutationObserver(reveal);
+      observer.observe(container, { childList: true, subtree: true });
+      reveal();
+    });
+
+    function tryInit(attempts) {
+      attempts = attempts || 0;
+      if (window.ESY) {
+        // results caps how many schools a unit may show; the server returns
+        // whatever inventory actually exists, up to this number. Without it
+        // the server picks a smaller default.
+        window.ESY.Widget({ domain_id: domainId, widget_id: widgetId, results: 10 });
+      } else if (attempts < 10) {
+        setTimeout(function () { tryInit(attempts + 1); }, 300);
+      }
+    }
+
+    setTimeout(function () { tryInit(); }, 400);
+  </script>
+)}
+<style>
+  .esy-widget-wrapper { margin: 2.5rem 0; }
+  .esy-widget-heading { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .esy-widget-intro { font-size: 0.9rem; color: var(--muted, #5a6b7a); margin-bottom: 0.5rem; }
+  .esy-widget-disclosure { font-size: 0.75rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted, #5a6b7a); margin-bottom: 0.75rem; }
+</style>

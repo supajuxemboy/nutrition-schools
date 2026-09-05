@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import EsyohWidget from '../../components/EsyohWidget.astro';
 import AiSummary from '../../components/AiSummary.astro';
 import Faq from '../../components/Faq.astro';
 import Byline from '../../components/Byline.astro';
@@ -90,6 +91,7 @@ const faq = [
     <div class="wrap">
       <p class="eyebrow">Original research</p>
       <h1>Our own studies, published with the limitations attached</h1>
+<EsyohWidget label="Programs accepting applicants now" intro="Accredited nutrition and dietetics programs currently taking applications." />
       <p class="lede">
         Two studies: a survey of {outcomesSurvey.sample.toLocaleString()} nutrition and dietetics graduates, and the
         seven-factor index we use to score programs. Both are ours. Both come with the caveats printed next to the
@@ -279,4 +281,5 @@ const faq = [
       figure is current. Last reviewed {site.reviewedLabel}.
     </div>
   </article>
+<EsyohWidget label="Compare accredited programs" intro="Explore accredited nutrition and dietetics programs before you decide." />
 </BaseLayout>

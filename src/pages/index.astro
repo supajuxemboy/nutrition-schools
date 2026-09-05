@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import EsyohWidget from '../components/EsyohWidget.astro';
 import AiSummary from '../components/AiSummary.astro';
 import Faq from '../components/Faq.astro';
 import { site, pillars, levels, specialties, modifiers } from '../data/site';
@@ -69,6 +70,7 @@ const faq = [
     <div class="wrap">
       <p class="eyebrow">Independent education research</p>
       <h1>Most nutrition advice is written by people who have never been credentialed to give it.</h1>
+<EsyohWidget label="Programs accepting applicants now" intro="Accredited nutrition and dietetics programs currently taking applications." />
       <p class="lede">
         We track {stats.programs} nutrition and dietetics programs at {stats.schools} institutions across
         {stats.states} states, each linked to its official program page, and we pair them with federal wage data and
@@ -562,6 +564,7 @@ const faq = [
       medical or dietary advice.
     </div>
   </article>
+<EsyohWidget label="Compare accredited programs" intro="Explore accredited nutrition and dietetics programs before you decide." />
 </BaseLayout>
 
 <style>
